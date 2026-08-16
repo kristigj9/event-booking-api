@@ -24,8 +24,8 @@ public class User {
 
     @Column(nullable = false)
     private String lastName;
-
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user_id")
+    @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 
     @Column(nullable = false, unique = true)
@@ -39,12 +39,11 @@ public class User {
     private Role role;
     //Lidhja One To Many, nje user disa Booking
     @OneToMany(
-            mappedBy = "user",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+            mappedBy = "user_id")
+    @Builder.Default
     private List<Booking> bookings = new ArrayList<>();
     //Lidhja nje user orgeniser me shume evente
-    @OneToMany(mappedBy = "organizer")
+    @OneToMany(mappedBy = "organizer_id")
+    @Builder.Default
     private List<Event> organizedEvents = new ArrayList<>();
 }

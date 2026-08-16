@@ -31,5 +31,12 @@ public class Venue {
     private Integer venueCapacity;
     //Lidhja nje venue ka disa evente
     @OneToMany(mappedBy = "venue")
+    @Builder.Default
     private List<Event> events = new ArrayList<>();
+
+    //Lidhja e nje Veneu me disa Seat
+    @OneToMany(mappedBy = "venue")
+    @Builder.Default
+    private List<Seat> seats = new ArrayList<>();
+
 }
