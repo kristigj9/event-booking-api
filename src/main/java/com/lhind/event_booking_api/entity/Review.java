@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
         name = "reviews",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_review_user_event",
+                        name = "unique_user_event",
                         columnNames = {"user_id", "event_id"}
                 )
         }
@@ -27,24 +27,26 @@ public class Review {
     private Long id;
 
     @Column(nullable = false)
-    private Integer rating;
+    private Integer ratingReview;
 
     @Column(length = 1000)
-    private String comment;
+    private String commentReview;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime dateTimeReview;
 
+
+    //Lidhja e shume review nje user
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
+//Lidhja shume review me nje event
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;
-
+//Gjenerimi Automatik i dates ores per nje Review
     @PrePersist
     public void prePersist() {
-        this.createdAt = LocalDateTime.now();
+        this.dateTimeReview = LocalDateTime.now();
     }
 }

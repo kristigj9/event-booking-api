@@ -24,26 +24,28 @@ public class Event {
     @Column(nullable = false)
     private String eventName;
     @Column(length = 1000)
-    private String description;
+    private String eventDescription;
     @Column(nullable = false)
-    private LocalDateTime startDateTime;
+    private LocalDateTime eventStartDateTime;
     @Column(nullable = false)
-    private LocalDateTime endDateTime;
+    private LocalDateTime eventEndDateTime;
     @Column(nullable = false)
-    private Integer totalSeats;
+    private Integer eventTotalSeats;
     @Column(nullable = false)
-    private Integer availableSeats;
+    private Integer EventAvailableSeats;
     @Column(nullable = false)
     private BigDecimal ticketPrice;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EventStatus eventStatus;
+
     //Lidhja nje event ka disa booking
     @OneToMany(
             mappedBy = "event",
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @Builder.Default
     private List<Booking> bookings = new ArrayList<>();
 
     //Lidhja nje event ka disa kategori
@@ -52,6 +54,7 @@ public class Event {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @Builder.Default
     List<Category> categories = new ArrayList<>();
 
     //Lidhja Shume evente krijohen vetem nga nje organize
@@ -65,4 +68,13 @@ public class Event {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "venue_id", nullable = false)
     private Venue venue;
+
+    //Lidhja e nje event me disa eventSeat
+    @OneToMany(
+            mappedBy= "eventSeat_id",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<EventSeat> eventSeats = new ArrayList<>();
 }

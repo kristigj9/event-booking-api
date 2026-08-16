@@ -19,10 +19,11 @@ public class Category {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String name;
+    private String nameCategory;
 
-    private String description;
-
+    private String descriptionCategory;
+    //Nje kategori ka disa Evente
     @OneToMany(mappedBy = "category")
+    @Builder.Default
     private List<Event> events = new ArrayList<>();
 }
