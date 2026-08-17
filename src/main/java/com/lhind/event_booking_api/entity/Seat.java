@@ -12,7 +12,7 @@ import java.util.List;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uk_seat_venue_row_number",
-                        columnNames = {"venue_id", "row_number", "seat_number"}
+                        columnNames = {"venue_id", "seat_row", "seat_number"}
                 )
         }
 )
@@ -27,7 +27,7 @@ public class Seat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "row_number", nullable = false)
+    @Column(name = "seat_row", nullable = false)
     private String rowNumber;
 
     @Column(name = "seat_number", nullable = false)

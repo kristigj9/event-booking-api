@@ -38,7 +38,8 @@ public class EventSeat {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StatusSeat statusSeat;
+    @Builder.Default
+    private StatusSeat statusSeat = StatusSeat.AVAILABLE;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal priceSeat;
