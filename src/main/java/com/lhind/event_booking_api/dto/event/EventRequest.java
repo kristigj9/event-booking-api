@@ -8,6 +8,7 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -42,5 +43,4 @@ public class EventRequest {
 
     @Valid
     @NotEmpty(message = "At least one category is required")
-    private CategoryReferenceRequest category;
-}
+    private List<CategoryReferenceRequest> categories;}

@@ -12,7 +12,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     List<Event> findByEventStatus(EventStatus eventStatus);
 
-    List<Event> findByCategoryId(Long categoryId);
+    List<Event> findByCategoriesId(Long categoryId);
 
     List<Event> findByVenueId(Long venueId);
 
