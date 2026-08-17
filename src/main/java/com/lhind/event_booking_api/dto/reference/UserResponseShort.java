@@ -8,7 +8,10 @@ import lombok.Setter;
 @Setter
 @Builder
 public class UserResponseShort {
+
     private Long id;
+
     private String firstName;
+
     private String lastName;
 }

@@ -22,8 +22,8 @@ public class Category {
     private String nameCategory;
 
     private String descriptionCategory;
-    //Nje kategori ka disa Evente
-    @OneToMany(mappedBy = "category")
+    //Disa kategori ka disa Evente
+    @ManyToMany(mappedBy = "categories")
     @Builder.Default
     private List<Event> events = new ArrayList<>();
 }

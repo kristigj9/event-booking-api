@@ -32,7 +32,7 @@ public class Event {
     @Column(nullable = false)
     private Integer eventTotalSeats;
     @Column(nullable = false)
-    private Integer EventAvailableSeats;
+    private Integer eventAvailableSeats;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EventStatus eventStatus;
@@ -44,14 +44,15 @@ public class Event {
     @Builder.Default
     private List<Booking> bookings = new ArrayList<>();
 
-    //Lidhja nje event ka disa kategori
-    @OneToMany(
-            mappedBy = "event_ctegory",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
+    //Lidhja disa evente ka disa kategori
+    @ManyToMany
+    @JoinTable(
+            name = "event_categories",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     @Builder.Default
-    List<Category> categories = new ArrayList<>();
+    private List<Category> categories = new ArrayList<>();
 
     //Lidhja Shume evente krijohen vetem nga nje organize
 
