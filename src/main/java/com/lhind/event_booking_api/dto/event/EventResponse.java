@@ -7,9 +7,8 @@ import com.lhind.event_booking_api.entity.EventStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,13 +29,11 @@ public class EventResponse {
 
     private Integer eventAvailableSeats;
 
-    private BigDecimal ticketPrice;
-
     private EventStatus eventStatus;
 
     private UserResponseShort organizer;
 
     private VenueResponseShort venue;
 
-    private CategoryResponseShort category;
+    private List<CategoryResponseShort> categories;
 }
