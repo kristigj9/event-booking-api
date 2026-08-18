@@ -2,6 +2,7 @@ package com.lhind.event_booking_api.mapper;
 
 import com.lhind.event_booking_api.dto.event.EventRequest;
 import com.lhind.event_booking_api.dto.event.EventResponse;
+import com.lhind.event_booking_api.dto.event.EventUpdateRequest;
 import com.lhind.event_booking_api.dto.reference.EventResponseShort;
 import com.lhind.event_booking_api.entity.Category;
 import com.lhind.event_booking_api.entity.Event;
@@ -9,6 +10,7 @@ import com.lhind.event_booking_api.entity.User;
 import com.lhind.event_booking_api.entity.Venue;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,7 +31,6 @@ public class EventMapper {
         this.categoryMapper = categoryMapper;
     }
 
-    // EventRequest + objektet e gjetura nga Service -> Event
     public Event toEntity(
             EventRequest request,
             User organizer,
@@ -51,11 +52,10 @@ public class EventMapper {
                 .eventStatus(request.getEventStatus())
                 .organizer(organizer)
                 .venue(venue)
-                .categories(categories)
+                .categories(new ArrayList<>(categories))
                 .build();
     }
 
-    // Event -> EventResponse
     public EventResponse toResponse(Event event) {
 
         if (event == null) {
@@ -71,15 +71,27 @@ public class EventMapper {
                 .eventTotalSeats(event.getEventTotalSeats())
                 .eventAvailableSeats(event.getEventAvailableSeats())
                 .eventStatus(event.getEventStatus())
-                .organizer(userMapper.toShortResponse(event.getOrganizer()))
-                .venue(venueMapper.toShortResponse(event.getVenue()))
+                .organizer(
+                        userMapper.toShortResponse(
+                                event.getOrganizer()
+                        )
+                )
+                .venue(
+                        venueMapper.toShortResponse(
+                                event.getVenue()
+                        )
+                )
                 .categories(
-                        categoryMapper.toShortResponseList(event.getCategories())
-                )                .build();
+                        categoryMapper.toShortResponseList(
+                                event.getCategories()
+                        )
+                )
+                .build();
     }
 
-    // Event -> EventResponseShort
-    public EventResponseShort toShortResponse(Event event) {
+    public EventResponseShort toShortResponse(
+            Event event
+    ) {
 
         if (event == null) {
             return null;
@@ -93,8 +105,9 @@ public class EventMapper {
                 .build();
     }
 
-    // List<Event> -> List<EventResponse>
-    public List<EventResponse> toResponseList(List<Event> events) {
+    public List<EventResponse> toResponseList(
+            List<Event> events
+    ) {
 
         if (events == null) {
             return Collections.emptyList();
@@ -107,7 +120,7 @@ public class EventMapper {
 
     // Update i Event ekzistues
     public void updateEntity(
-            EventRequest request,
+            EventUpdateRequest request,
             Event event,
             Venue venue,
             List<Category> categories
@@ -117,13 +130,33 @@ public class EventMapper {
             return;
         }
 
-        event.setEventName(request.getEventName());
-        event.setEventDescription(request.getEventDescription());
-        event.setEventStartDateTime(request.getEventStartDateTime());
-        event.setEventEndDateTime(request.getEventEndDateTime());
-        event.setEventTotalSeats(request.getEventTotalSeats());
-        event.setEventStatus(request.getEventStatus());
+        event.setEventName(
+                request.getEventName()
+        );
+
+        event.setEventDescription(
+                request.getEventDescription()
+        );
+
+        event.setEventStartDateTime(
+                request.getEventStartDateTime()
+        );
+
+        event.setEventEndDateTime(
+                request.getEventEndDateTime()
+        );
+
+        event.setEventTotalSeats(
+                request.getEventTotalSeats()
+        );
+
+        event.setEventStatus(
+                request.getEventStatus()
+        );
+
         event.setVenue(venue);
-        event.setCategories(categories);
+
+        event.getCategories().clear();
+        event.getCategories().addAll(categories);
     }
 }

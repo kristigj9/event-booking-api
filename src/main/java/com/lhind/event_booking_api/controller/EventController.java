@@ -2,6 +2,7 @@ package com.lhind.event_booking_api.controller;
 
 import com.lhind.event_booking_api.dto.event.EventRequest;
 import com.lhind.event_booking_api.dto.event.EventResponse;
+import com.lhind.event_booking_api.dto.event.EventUpdateRequest;
 import com.lhind.event_booking_api.entity.EventStatus;
 import com.lhind.event_booking_api.service.EventService;
 import jakarta.validation.Valid;
@@ -91,7 +92,7 @@ public class EventController {
     }
 
     // PUBLIC
-    // Merr eventet sipas kategoris
+    // Merr eventet sipas kategorise
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<EventResponse>> getEventsByCategory(
             @PathVariable Long categoryId
@@ -121,11 +122,11 @@ public class EventController {
     }
 
     // ORGANIZER owner / ADMIN
-    // Ben Update eventin
+    // Ben update eventin
     @PutMapping("/{eventId}")
     public ResponseEntity<EventResponse> updateEvent(
             @PathVariable Long eventId,
-            @Valid @RequestBody EventRequest request
+            @Valid @RequestBody EventUpdateRequest request
     ) {
 
         EventResponse response =

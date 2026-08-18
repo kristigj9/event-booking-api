@@ -2,6 +2,7 @@ package com.lhind.event_booking_api.service;
 
 import com.lhind.event_booking_api.dto.event.EventRequest;
 import com.lhind.event_booking_api.dto.event.EventResponse;
+import com.lhind.event_booking_api.dto.event.EventUpdateRequest;
 import com.lhind.event_booking_api.dto.reference.CategoryReferenceRequest;
 import com.lhind.event_booking_api.entity.Category;
 import com.lhind.event_booking_api.entity.Event;
@@ -16,10 +17,10 @@ import com.lhind.event_booking_api.repository.CategoryRepository;
 import com.lhind.event_booking_api.repository.EventRepository;
 import com.lhind.event_booking_api.repository.VenueRepository;
 import com.lhind.event_booking_api.security.AuthenticatedUserService;
-import com.lhind.event_booking_api.service.EventService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -48,26 +49,39 @@ public class EventServiceImpl implements EventService {
     // CREATE EVENT
     @Override
     @Transactional
-    public EventResponse createEvent(EventRequest request) {
+    public EventResponse createEvent(
+            EventRequest request
+    ) {
 
         User organizer =
                 authenticatedUserService.getCurrentUser();
 
-        Venue venue = findVenue(request);
+        Venue venue =
+                findVenue(
+                        request.getVenue().getVenueName(),
+                        request.getVenue().getVenueCity()
+                );
 
         List<Category> categories =
-                findCategories(request);
+                findCategories(request.getCategories());
 
-        validateEventDates(request);
-
-        validateVenueCapacity(request, venue);
-
-        Event event = eventMapper.toEntity(
-                request,
-                organizer,
-                venue,
-                categories
+        validateEventDates(
+                request.getEventStartDateTime(),
+                request.getEventEndDateTime()
         );
+
+        validateVenueCapacity(
+                request.getEventTotalSeats(),
+                venue
+        );
+
+        Event event =
+                eventMapper.toEntity(
+                        request,
+                        organizer,
+                        venue,
+                        categories
+                );
 
         Event savedEvent =
                 eventRepository.save(event);
@@ -80,7 +94,8 @@ public class EventServiceImpl implements EventService {
     @Transactional(readOnly = true)
     public EventResponse getEventById(Long id) {
 
-        Event event = findEvent(id);
+        Event event =
+                findEvent(id);
 
         return eventMapper.toResponse(event);
     }
@@ -103,7 +118,9 @@ public class EventServiceImpl implements EventService {
     ) {
 
         return eventMapper.toResponseList(
-                eventRepository.findByOrganizerId(organizerId)
+                eventRepository.findByOrganizerId(
+                        organizerId
+                )
         );
     }
 
@@ -115,7 +132,9 @@ public class EventServiceImpl implements EventService {
     ) {
 
         return eventMapper.toResponseList(
-                eventRepository.findByEventStatus(status)
+                eventRepository.findByEventStatus(
+                        status
+                )
         );
     }
 
@@ -127,7 +146,9 @@ public class EventServiceImpl implements EventService {
     ) {
 
         return eventMapper.toResponseList(
-                eventRepository.findByCategoriesId(categoryId)
+                eventRepository.findByCategoriesId(
+                        categoryId
+                )
         );
     }
 
@@ -139,7 +160,9 @@ public class EventServiceImpl implements EventService {
     ) {
 
         return eventMapper.toResponseList(
-                eventRepository.findByVenueId(venueId)
+                eventRepository.findByVenueId(
+                        venueId
+                )
         );
     }
 
@@ -148,30 +171,50 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public EventResponse updateEvent(
             Long eventId,
-            EventRequest request
+            EventUpdateRequest request
     ) {
 
-        Event event = findEvent(eventId);
+        Event event =
+                findEvent(eventId);
 
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
-        validateOwnership(event, currentUser);
+        validateOwnership(
+                event,
+                currentUser
+        );
 
-        Venue venue = findVenue(request);
+        Venue venue =
+                findVenue(
+                        request.getVenue().getVenueName(),
+                        request.getVenue().getVenueCity()
+                );
 
         List<Category> categories =
-                findCategories(request);
+                findCategories(request.getCategories());
 
-        validateEventDates(request);
+        validateEventDates(
+                request.getEventStartDateTime(),
+                request.getEventEndDateTime()
+        );
 
-        validateVenueCapacity(request, venue);
+        validateVenueCapacity(
+                request.getEventTotalSeats(),
+                venue
+        );
+
+        validateStatusTransition(
+                event,
+                request
+        );
 
         int occupiedSeats =
                 event.getEventTotalSeats()
                         - event.getEventAvailableSeats();
 
-        if (request.getEventTotalSeats() < occupiedSeats) {
+        if (request.getEventTotalSeats()
+                < occupiedSeats) {
 
             throw new InvalidOperationException(
                     "Total seats cannot be less than already reserved or sold seats"
@@ -201,12 +244,16 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public void deleteEvent(Long eventId) {
 
-        Event event = findEvent(eventId);
+        Event event =
+                findEvent(eventId);
 
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
-        validateOwnership(event, currentUser);
+        validateOwnership(
+                event,
+                currentUser
+        );
 
         eventRepository.delete(event);
     }
@@ -215,7 +262,9 @@ public class EventServiceImpl implements EventService {
     // PRIVATE HELPER METHODS
     // --------------------------------
 
-    private Event findEvent(Long eventId) {
+    private Event findEvent(
+            Long eventId
+    ) {
 
         return eventRepository.findById(eventId)
                 .orElseThrow(() ->
@@ -226,30 +275,35 @@ public class EventServiceImpl implements EventService {
                 );
     }
 
-    private Venue findVenue(EventRequest request) {
+    private Venue findVenue(
+            String venueName,
+            String venueCity
+    ) {
 
         return venueRepository
                 .findByVenueNameAndVenueCity(
-                        request.getVenue().getVenueName(),
-                        request.getVenue().getVenueCity()
+                        venueName,
+                        venueCity
                 )
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Venue not found: "
-                                        + request.getVenue().getVenueName()
+                                        + venueName
                                         + " - "
-                                        + request.getVenue().getVenueCity()
+                                        + venueCity
                         )
                 );
     }
 
     private List<Category> findCategories(
-            EventRequest request
+            List<CategoryReferenceRequest> categoryRequests
     ) {
 
-        return request.getCategories()
+        return categoryRequests
                 .stream()
-                .map(CategoryReferenceRequest::getNameCategory)
+                .map(
+                        CategoryReferenceRequest::getNameCategory
+                )
                 .map(name ->
                         categoryRepository
                                 .findByNameCategory(name)
@@ -264,13 +318,11 @@ public class EventServiceImpl implements EventService {
     }
 
     private void validateEventDates(
-            EventRequest request
+            LocalDateTime startDateTime,
+            LocalDateTime endDateTime
     ) {
 
-        if (!request.getEventEndDateTime()
-                .isAfter(
-                        request.getEventStartDateTime()
-                )) {
+        if (!endDateTime.isAfter(startDateTime)) {
 
             throw new InvalidOperationException(
                     "Event end date must be after start date"
@@ -279,17 +331,92 @@ public class EventServiceImpl implements EventService {
     }
 
     private void validateVenueCapacity(
-            EventRequest request,
+            Integer totalSeats,
             Venue venue
     ) {
 
-        if (request.getEventTotalSeats()
-                > venue.getVenueCapacity()) {
+        if (totalSeats > venue.getVenueCapacity()) {
 
             throw new InvalidOperationException(
                     "Event total seats cannot exceed venue capacity"
             );
         }
+    }
+
+    private void validateStatusTransition(
+            Event event,
+            EventUpdateRequest request
+    ) {
+
+        EventStatus currentStatus =
+                event.getEventStatus();
+
+        EventStatus newStatus =
+                request.getEventStatus();
+
+        // Nese statusi nuk ndryshon, lejohet
+        if (currentStatus == newStatus) {
+            return;
+        }
+
+        // Event i perfunduar nuk mund te rikthehet
+        if (currentStatus == EventStatus.COMPLETED) {
+
+            throw new InvalidOperationException(
+                    "Completed event status cannot be changed"
+            );
+        }
+
+        // Event i anuluar nuk mund te riaktivizohet
+        if (currentStatus == EventStatus.CANCELLED) {
+
+            throw new InvalidOperationException(
+                    "Cancelled event status cannot be changed"
+            );
+        }
+
+        // DRAFT -> PUBLISHED ose CANCELLED
+        if (currentStatus == EventStatus.DRAFT) {
+
+            if (newStatus != EventStatus.PUBLISHED
+                    && newStatus != EventStatus.CANCELLED) {
+
+                throw new InvalidOperationException(
+                        "Draft event can only be published or cancelled"
+                );
+            }
+
+            return;
+        }
+
+        // PUBLISHED -> COMPLETED ose CANCELLED
+        if (currentStatus == EventStatus.PUBLISHED) {
+
+            if (newStatus == EventStatus.CANCELLED) {
+                return;
+            }
+
+            if (newStatus == EventStatus.COMPLETED) {
+
+                if (request.getEventEndDateTime()
+                        .isAfter(LocalDateTime.now())) {
+
+                    throw new InvalidOperationException(
+                            "Event cannot be completed before it has ended"
+                    );
+                }
+
+                return;
+            }
+
+            throw new InvalidOperationException(
+                    "Published event can only be completed or cancelled"
+            );
+        }
+
+        throw new InvalidOperationException(
+                "Invalid event status transition"
+        );
     }
 
     private void validateOwnership(

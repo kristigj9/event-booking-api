@@ -2,6 +2,7 @@ package com.lhind.event_booking_api.service;
 
 import com.lhind.event_booking_api.dto.event.EventRequest;
 import com.lhind.event_booking_api.dto.event.EventResponse;
+import com.lhind.event_booking_api.dto.event.EventUpdateRequest;
 import com.lhind.event_booking_api.entity.EventStatus;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public interface EventService {
 
     EventResponse updateEvent(
             Long eventId,
-            EventRequest request
+            EventUpdateRequest request
     );
 
     void deleteEvent(Long eventId);
