@@ -8,18 +8,25 @@ import java.util.List;
 
 public interface UserService {
 
-    // Merr nje user sipas ID
+    // USER / ORGANIZER / ADMIN - profili personal
+    UserResponse getCurrentUser();
+
+    // ADMIN
     UserResponse getUserById(Long id);
 
-    // Merr te gjith  users
+    // ADMIN
     List<UserResponse> getAllUsers();
 
-    // Perditeson profilin e user-it
-    UserResponse updateUser(Long id, UserUpdateRequest request);
-
-    // Ndryshon password-in
-    void changePassword(Long id, ChangePasswordRequest request
+    // USER / ORGANIZER / ADMIN - update i profilit personal
+    UserResponse updateCurrentUser(
+            UserUpdateRequest request
     );
-    // Fshin user
+
+    // USER / ORGANIZER / ADMIN - ndryshimi i password-it personal
+    void changePassword(
+            ChangePasswordRequest request
+    );
+
+    // ADMIN
     void deleteUser(Long id);
 }

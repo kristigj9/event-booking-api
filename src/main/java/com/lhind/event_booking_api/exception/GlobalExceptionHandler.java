@@ -15,7 +15,6 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    //Krijohet nje error response
     public ResponseEntity<ErrorResponse> handleResourceNotFound(
             ResourceNotFoundException ex,
             HttpServletRequest request
@@ -130,6 +129,8 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
+
+        ex.printStackTrace();
 
         ErrorResponse error = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())

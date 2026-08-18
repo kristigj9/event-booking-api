@@ -6,6 +6,7 @@ import com.lhind.event_booking_api.dto.reference.CategoryReferenceRequest;
 import com.lhind.event_booking_api.entity.Category;
 import com.lhind.event_booking_api.entity.Event;
 import com.lhind.event_booking_api.entity.EventStatus;
+import com.lhind.event_booking_api.entity.Role;
 import com.lhind.event_booking_api.entity.User;
 import com.lhind.event_booking_api.entity.Venue;
 import com.lhind.event_booking_api.exception.InvalidOperationException;
@@ -13,8 +14,9 @@ import com.lhind.event_booking_api.exception.ResourceNotFoundException;
 import com.lhind.event_booking_api.mapper.EventMapper;
 import com.lhind.event_booking_api.repository.CategoryRepository;
 import com.lhind.event_booking_api.repository.EventRepository;
-import com.lhind.event_booking_api.repository.UserRepository;
 import com.lhind.event_booking_api.repository.VenueRepository;
+import com.lhind.event_booking_api.security.AuthenticatedUserService;
+import com.lhind.event_booking_api.service.EventService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,34 +26,32 @@ import java.util.List;
 public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
-    private final UserRepository userRepository;
     private final VenueRepository venueRepository;
     private final CategoryRepository categoryRepository;
     private final EventMapper eventMapper;
+    private final AuthenticatedUserService authenticatedUserService;
 
     public EventServiceImpl(
             EventRepository eventRepository,
-            UserRepository userRepository,
             VenueRepository venueRepository,
             CategoryRepository categoryRepository,
-            EventMapper eventMapper
+            EventMapper eventMapper,
+            AuthenticatedUserService authenticatedUserService
     ) {
         this.eventRepository = eventRepository;
-        this.userRepository = userRepository;
         this.venueRepository = venueRepository;
         this.categoryRepository = categoryRepository;
         this.eventMapper = eventMapper;
+        this.authenticatedUserService = authenticatedUserService;
     }
 
     // CREATE EVENT
     @Override
     @Transactional
-    public EventResponse createEvent(
-            EventRequest request,
-            Long organizerId
-    ) {
+    public EventResponse createEvent(EventRequest request) {
 
-        User organizer = findOrganizer(organizerId);
+        User organizer =
+                authenticatedUserService.getCurrentUser();
 
         Venue venue = findVenue(request);
 
@@ -69,7 +69,8 @@ public class EventServiceImpl implements EventService {
                 categories
         );
 
-        Event savedEvent = eventRepository.save(event);
+        Event savedEvent =
+                eventRepository.save(event);
 
         return eventMapper.toResponse(savedEvent);
     }
@@ -147,13 +148,15 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public EventResponse updateEvent(
             Long eventId,
-            Long organizerId,
             EventRequest request
     ) {
 
         Event event = findEvent(eventId);
 
-        validateOwnership(event, organizerId);
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
+
+        validateOwnership(event, currentUser);
 
         Venue venue = findVenue(request);
 
@@ -164,18 +167,14 @@ public class EventServiceImpl implements EventService {
 
         validateVenueCapacity(request, venue);
 
-        /*
-         * Ruajmë diferencën midis totalSeats dhe
-         * availableSeats për të ditur sa vende janë
-         * aktualisht të zëna.
-         */
-        int bookedSeats =
+        int occupiedSeats =
                 event.getEventTotalSeats()
                         - event.getEventAvailableSeats();
 
-        if (request.getEventTotalSeats() < bookedSeats) {
+        if (request.getEventTotalSeats() < occupiedSeats) {
+
             throw new InvalidOperationException(
-                    "Total seats cannot be less than already booked seats"
+                    "Total seats cannot be less than already reserved or sold seats"
             );
         }
 
@@ -186,12 +185,9 @@ public class EventServiceImpl implements EventService {
                 categories
         );
 
-        /*
-         * Available seats llogariten përsëri duke
-         * respektuar vendet tashmë të rezervuara.
-         */
         event.setEventAvailableSeats(
-                request.getEventTotalSeats() - bookedSeats
+                request.getEventTotalSeats()
+                        - occupiedSeats
         );
 
         Event updatedEvent =
@@ -203,21 +199,21 @@ public class EventServiceImpl implements EventService {
     // DELETE EVENT
     @Override
     @Transactional
-    public void deleteEvent(
-            Long eventId,
-            Long organizerId
-    ) {
+    public void deleteEvent(Long eventId) {
 
         Event event = findEvent(eventId);
 
-        validateOwnership(event, organizerId);
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
+
+        validateOwnership(event, currentUser);
 
         eventRepository.delete(event);
     }
 
-    // -----------------------------
+    // --------------------------------
     // PRIVATE HELPER METHODS
-    // -----------------------------
+    // --------------------------------
 
     private Event findEvent(Long eventId) {
 
@@ -226,17 +222,6 @@ public class EventServiceImpl implements EventService {
                         new ResourceNotFoundException(
                                 "Event not found with id: "
                                         + eventId
-                        )
-                );
-    }
-
-    private User findOrganizer(Long organizerId) {
-
-        return userRepository.findById(organizerId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Organizer not found with id: "
-                                        + organizerId
                         )
                 );
     }
@@ -252,6 +237,8 @@ public class EventServiceImpl implements EventService {
                         new ResourceNotFoundException(
                                 "Venue not found: "
                                         + request.getVenue().getVenueName()
+                                        + " - "
+                                        + request.getVenue().getVenueCity()
                         )
                 );
     }
@@ -281,7 +268,9 @@ public class EventServiceImpl implements EventService {
     ) {
 
         if (!request.getEventEndDateTime()
-                .isAfter(request.getEventStartDateTime())) {
+                .isAfter(
+                        request.getEventStartDateTime()
+                )) {
 
             throw new InvalidOperationException(
                     "Event end date must be after start date"
@@ -305,12 +294,18 @@ public class EventServiceImpl implements EventService {
 
     private void validateOwnership(
             Event event,
-            Long organizerId
+            User currentUser
     ) {
 
-        if (!event.getOrganizer()
-                .getId()
-                .equals(organizerId)) {
+        boolean isAdmin =
+                currentUser.getRole() == Role.ADMIN;
+
+        boolean isOwner =
+                event.getOrganizer()
+                        .getId()
+                        .equals(currentUser.getId());
+
+        if (!isAdmin && !isOwner) {
 
             throw new InvalidOperationException(
                     "You are not allowed to modify this event"

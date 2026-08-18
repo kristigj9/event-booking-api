@@ -1,4 +1,5 @@
 package com.lhind.event_booking_api.service;
+
 import com.lhind.event_booking_api.dto.booking.BookingRequest;
 import com.lhind.event_booking_api.dto.booking.BookingResponse;
 import com.lhind.event_booking_api.dto.reference.SeatSelectionRequest;
@@ -7,51 +8,53 @@ import com.lhind.event_booking_api.exception.InvalidOperationException;
 import com.lhind.event_booking_api.exception.ResourceNotFoundException;
 import com.lhind.event_booking_api.mapper.BookingMapper;
 import com.lhind.event_booking_api.repository.*;
+import com.lhind.event_booking_api.security.AuthenticatedUserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 
 @Service
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
-    private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final SeatRepository seatRepository;
     private final EventSeatRepository eventSeatRepository;
     private final BookingMapper bookingMapper;
+    private final AuthenticatedUserService authenticatedUserService;
 
     public BookingServiceImpl(
             BookingRepository bookingRepository,
-            UserRepository userRepository,
             EventRepository eventRepository,
             SeatRepository seatRepository,
             EventSeatRepository eventSeatRepository,
-            BookingMapper bookingMapper
+            BookingMapper bookingMapper,
+            AuthenticatedUserService authenticatedUserService
     ) {
         this.bookingRepository = bookingRepository;
-        this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.seatRepository = seatRepository;
         this.eventSeatRepository = eventSeatRepository;
         this.bookingMapper = bookingMapper;
+        this.authenticatedUserService = authenticatedUserService;
     }
 
     // CREATE BOOKING
-    //Kjo metode ul dhe avaible total Seat per cdo Seat qe kalon ne status Reserved
+    // Ul eventAvailableSeats për çdo Seat që kalon në RESERVED
     @Override
     @Transactional
     public BookingResponse createBooking(
-            Long userId,
             BookingRequest request
     ) {
 
-        User user = findUser(userId);
+        User user =
+                authenticatedUserService.getCurrentUser();
 
-        Event event = findEvent(request.getEventId());
+        Event event =
+                findEvent(request.getEventId());
 
         if (event.getEventAvailableSeats()
                 < request.getSeats().size()) {
@@ -127,53 +130,69 @@ public class BookingServiceImpl implements BookingService {
             Long bookingId
     ) {
 
-        Booking booking = findBooking(bookingId);
+        Booking booking =
+                findBooking(bookingId);
+
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
+
+        validateOwnership(booking, currentUser);
 
         return bookingMapper.toResponse(booking);
     }
 
-    // GET BY USER
+    // GET BOOKINGS OF CURRENT USER
     @Override
     @Transactional(readOnly = true)
-    public List<BookingResponse> getBookingsByUser(
-            Long userId
-    ) {
+    public List<BookingResponse> getMyBookings() {
 
-        findUser(userId);
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
 
         return bookingMapper.toResponseList(
-                bookingRepository.findByUserId(userId)
+                bookingRepository.findByUserId(
+                        currentUser.getId()
+                )
         );
     }
 
-    // GET BY EVENT
+    // GET BOOKINGS BY EVENT
     @Override
     @Transactional(readOnly = true)
     public List<BookingResponse> getBookingsByEvent(
             Long eventId
     ) {
 
-        findEvent(eventId);
+        Event event =
+                findEvent(eventId);
+
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
+
+        validateEventOwnership(
+                event,
+                currentUser
+        );
 
         return bookingMapper.toResponseList(
                 bookingRepository.findByEventId(eventId)
         );
     }
 
-    // GET BY USER + STATUS
+    // GET CURRENT USER BOOKINGS BY STATUS
     @Override
     @Transactional(readOnly = true)
-    public List<BookingResponse> getBookingsByUserAndStatus(
-            Long userId,
+    public List<BookingResponse> getMyBookingsByStatus(
             BookingStatus status
     ) {
 
-        findUser(userId);
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
 
         return bookingMapper.toResponseList(
                 bookingRepository
                         .findByUserIdAndBookingStatus(
-                                userId,
+                                currentUser.getId(),
                                 status
                         )
         );
@@ -186,7 +205,16 @@ public class BookingServiceImpl implements BookingService {
             Long bookingId
     ) {
 
-        Booking booking = findBooking(bookingId);
+        Booking booking =
+                findBooking(bookingId);
+
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
+
+        validateEventOwnership(
+                booking.getEvent(),
+                currentUser
+        );
 
         if (booking.getBookingStatus()
                 != BookingStatus.PENDING) {
@@ -228,13 +256,19 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingResponse cancelBooking(
-            Long bookingId,
-            Long userId
+            Long bookingId
     ) {
 
-        Booking booking = findBooking(bookingId);
+        Booking booking =
+                findBooking(bookingId);
 
-        validateOwnership(booking, userId);
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
+
+        validateOwnership(
+                booking,
+                currentUser
+        );
 
         if (booking.getBookingStatus()
                 == BookingStatus.CANCELLED) {
@@ -253,8 +287,8 @@ public class BookingServiceImpl implements BookingService {
         }
 
         /*
-         * Lejojm anulim vetem sa kohe seats
-         * nuk jane bere SOLD.
+         * Lejojmë anulim vetëm sa kohë seats
+         * nuk janë bërë SOLD.
          */
         for (BookingSeat bookingSeat
                 : booking.getBookingSeats()) {
@@ -275,7 +309,8 @@ public class BookingServiceImpl implements BookingService {
             );
         }
 
-        Event event = booking.getEvent();
+        Event event =
+                booking.getEvent();
 
         event.setEventAvailableSeats(
                 event.getEventAvailableSeats()
@@ -298,7 +333,16 @@ public class BookingServiceImpl implements BookingService {
             Long bookingId
     ) {
 
-        Booking booking = findBooking(bookingId);
+        Booking booking =
+                findBooking(bookingId);
+
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
+
+        validateEventOwnership(
+                booking.getEvent(),
+                currentUser
+        );
 
         if (booking.getBookingStatus()
                 != BookingStatus.CONFIRMED) {
@@ -317,10 +361,14 @@ public class BookingServiceImpl implements BookingService {
         );
     }
 
-    //
-    // PRIVATE HELPER METHODS
 
-    private Booking findBooking(Long bookingId) {
+    // --------------------------------
+    // PRIVATE HELPER METHODS
+    // --------------------------------
+
+    private Booking findBooking(
+            Long bookingId
+    ) {
 
         return bookingRepository.findById(bookingId)
                 .orElseThrow(() ->
@@ -331,18 +379,9 @@ public class BookingServiceImpl implements BookingService {
                 );
     }
 
-    private User findUser(Long userId) {
-
-        return userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "User not found with id: "
-                                        + userId
-                        )
-                );
-    }
-
-    private Event findEvent(Long eventId) {
+    private Event findEvent(
+            Long eventId
+    ) {
 
         return eventRepository.findById(eventId)
                 .orElseThrow(() ->
@@ -393,15 +432,42 @@ public class BookingServiceImpl implements BookingService {
 
     private void validateOwnership(
             Booking booking,
-            Long userId
+            User currentUser
     ) {
 
-        if (!booking.getUser()
-                .getId()
-                .equals(userId)) {
+        boolean isAdmin =
+                currentUser.getRole() == Role.ADMIN;
+
+        boolean isOwner =
+                booking.getUser()
+                        .getId()
+                        .equals(currentUser.getId());
+
+        if (!isAdmin && !isOwner) {
 
             throw new InvalidOperationException(
-                    "You are not allowed to modify this booking"
+                    "You are not allowed to access or modify this booking"
+            );
+        }
+    }
+
+    private void validateEventOwnership(
+            Event event,
+            User currentUser
+    ) {
+
+        boolean isAdmin =
+                currentUser.getRole() == Role.ADMIN;
+
+        boolean isOrganizer =
+                event.getOrganizer()
+                        .getId()
+                        .equals(currentUser.getId());
+
+        if (!isAdmin && !isOrganizer) {
+
+            throw new InvalidOperationException(
+                    "You are not allowed to manage bookings for this event"
             );
         }
     }
@@ -410,7 +476,8 @@ public class BookingServiceImpl implements BookingService {
             List<SeatSelectionRequest> seats
     ) {
 
-        Set<String> uniqueSeats = new HashSet<>();
+        Set<String> uniqueSeats =
+                new HashSet<>();
 
         for (SeatSelectionRequest seat : seats) {
 

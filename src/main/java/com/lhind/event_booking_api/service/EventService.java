@@ -8,10 +8,7 @@ import java.util.List;
 
 public interface EventService {
 
-    EventResponse createEvent(
-            EventRequest request,
-            Long organizerId
-    );
+    EventResponse createEvent(EventRequest request);
 
     EventResponse getEventById(Long id);
 
@@ -27,12 +24,8 @@ public interface EventService {
 
     EventResponse updateEvent(
             Long eventId,
-            Long organizerId,
             EventRequest request
     );
 
-    void deleteEvent(
-            Long eventId,
-            Long organizerId
-    );
+    void deleteEvent(Long eventId);
 }

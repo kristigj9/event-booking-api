@@ -8,7 +8,6 @@ import java.util.List;
 public interface ReviewService {
 
     ReviewResponse createReview(
-            Long userId,
             ReviewRequest request
     );
 
@@ -16,16 +15,12 @@ public interface ReviewService {
 
     List<ReviewResponse> getReviewsByEvent(Long eventId);
 
-    List<ReviewResponse> getReviewsByUser(Long userId);
+    List<ReviewResponse> getMyReviews();
 
     ReviewResponse updateReview(
             Long reviewId,
-            Long userId,
             ReviewRequest request
     );
 
-    void deleteReview(
-            Long reviewId,
-            Long userId
-    );
+    void deleteReview(Long reviewId);
 }

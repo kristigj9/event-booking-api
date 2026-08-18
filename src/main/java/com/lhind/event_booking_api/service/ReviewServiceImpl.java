@@ -4,6 +4,7 @@ import com.lhind.event_booking_api.dto.review.ReviewRequest;
 import com.lhind.event_booking_api.dto.review.ReviewResponse;
 import com.lhind.event_booking_api.entity.Event;
 import com.lhind.event_booking_api.entity.Review;
+import com.lhind.event_booking_api.entity.Role;
 import com.lhind.event_booking_api.entity.User;
 import com.lhind.event_booking_api.exception.DuplicateResourceException;
 import com.lhind.event_booking_api.exception.InvalidOperationException;
@@ -11,7 +12,7 @@ import com.lhind.event_booking_api.exception.ResourceNotFoundException;
 import com.lhind.event_booking_api.mapper.ReviewMapper;
 import com.lhind.event_booking_api.repository.EventRepository;
 import com.lhind.event_booking_api.repository.ReviewRepository;
-import com.lhind.event_booking_api.repository.UserRepository;
+import com.lhind.event_booking_api.security.AuthenticatedUserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,38 +22,40 @@ import java.util.List;
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final ReviewMapper reviewMapper;
+    private final AuthenticatedUserService authenticatedUserService;
 
     public ReviewServiceImpl(
             ReviewRepository reviewRepository,
-            UserRepository userRepository,
             EventRepository eventRepository,
-            ReviewMapper reviewMapper
+            ReviewMapper reviewMapper,
+            AuthenticatedUserService authenticatedUserService
     ) {
         this.reviewRepository = reviewRepository;
-        this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.reviewMapper = reviewMapper;
+        this.authenticatedUserService = authenticatedUserService;
     }
 
     // CREATE
     @Override
     @Transactional
     public ReviewResponse createReview(
-            Long userId,
             ReviewRequest request
     ) {
 
-        User user = findUser(userId);
+        User user =
+                authenticatedUserService.getCurrentUser();
 
-        Event event = findEvent(request.getEventId());
+        Event event =
+                findEvent(request.getEventId());
 
         if (reviewRepository.existsByUserIdAndEventId(
-                userId,
+                user.getId(),
                 event.getId()
         )) {
+
             throw new DuplicateResourceException(
                     "User has already reviewed this event"
             );
@@ -73,9 +76,12 @@ public class ReviewServiceImpl implements ReviewService {
     // GET BY ID
     @Override
     @Transactional(readOnly = true)
-    public ReviewResponse getReviewById(Long reviewId) {
+    public ReviewResponse getReviewById(
+            Long reviewId
+    ) {
 
-        Review review = findReview(reviewId);
+        Review review =
+                findReview(reviewId);
 
         return reviewMapper.toResponse(review);
     }
@@ -83,7 +89,9 @@ public class ReviewServiceImpl implements ReviewService {
     // GET REVIEWS BY EVENT
     @Override
     @Transactional(readOnly = true)
-    public List<ReviewResponse> getReviewsByEvent(Long eventId) {
+    public List<ReviewResponse> getReviewsByEvent(
+            Long eventId
+    ) {
 
         findEvent(eventId);
 
@@ -92,15 +100,18 @@ public class ReviewServiceImpl implements ReviewService {
         );
     }
 
-    // GET REVIEWS BY USER
+    // GET REVIEWS OF CURRENT USER
     @Override
     @Transactional(readOnly = true)
-    public List<ReviewResponse> getReviewsByUser(Long userId) {
+    public List<ReviewResponse> getMyReviews() {
 
-        findUser(userId);
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
 
         return reviewMapper.toResponseList(
-                reviewRepository.findByUserId(userId)
+                reviewRepository.findByUserId(
+                        currentUser.getId()
+                )
         );
     }
 
@@ -109,17 +120,23 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public ReviewResponse updateReview(
             Long reviewId,
-            Long userId,
             ReviewRequest request
     ) {
 
-        Review review = findReview(reviewId);
+        Review review =
+                findReview(reviewId);
 
-        validateOwnership(review, userId);
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
+
+        validateOwnership(
+                review,
+                currentUser
+        );
 
         /*
-         * Nuk lejojm te behet update i nje Review
-         * ta transferojë ate te nje Event tjeter.
+         * Nuk lejojmë që një Review të transferohet
+         * nga një Event te një Event tjetër.
          */
         if (!review.getEvent()
                 .getId()
@@ -130,7 +147,10 @@ public class ReviewServiceImpl implements ReviewService {
             );
         }
 
-        reviewMapper.updateReview(request, review);
+        reviewMapper.updateReview(
+                request,
+                review
+        );
 
         Review updatedReview =
                 reviewRepository.save(review);
@@ -142,21 +162,30 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public void deleteReview(
-            Long reviewId,
-            Long userId
+            Long reviewId
     ) {
 
-        Review review = findReview(reviewId);
+        Review review =
+                findReview(reviewId);
 
-        validateOwnership(review, userId);
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
+
+        validateOwnership(
+                review,
+                currentUser
+        );
 
         reviewRepository.delete(review);
     }
 
-
+    // ----------------------------
     // PRIVATE HELPER METHODS
+    // ----------------------------
 
-    private Review findReview(Long reviewId) {
+    private Review findReview(
+            Long reviewId
+    ) {
 
         return reviewRepository.findById(reviewId)
                 .orElseThrow(() ->
@@ -167,18 +196,9 @@ public class ReviewServiceImpl implements ReviewService {
                 );
     }
 
-    private User findUser(Long userId) {
-
-        return userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "User not found with id: "
-                                        + userId
-                        )
-                );
-    }
-
-    private Event findEvent(Long eventId) {
+    private Event findEvent(
+            Long eventId
+    ) {
 
         return eventRepository.findById(eventId)
                 .orElseThrow(() ->
@@ -191,12 +211,18 @@ public class ReviewServiceImpl implements ReviewService {
 
     private void validateOwnership(
             Review review,
-            Long userId
+            User currentUser
     ) {
 
-        if (!review.getUser()
-                .getId()
-                .equals(userId)) {
+        boolean isAdmin =
+                currentUser.getRole() == Role.ADMIN;
+
+        boolean isOwner =
+                review.getUser()
+                        .getId()
+                        .equals(currentUser.getId());
+
+        if (!isAdmin && !isOwner) {
 
             throw new InvalidOperationException(
                     "You are not allowed to modify this review"
