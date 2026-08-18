@@ -8,6 +8,14 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.lhind.event_booking_api.dto.auth.AuthResponse;
+import com.lhind.event_booking_api.dto.auth.LoginRequest;
+import com.lhind.event_booking_api.dto.auth.RegisterRequest;
+import com.lhind.event_booking_api.service.AuthService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")

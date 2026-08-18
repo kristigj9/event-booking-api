@@ -46,10 +46,10 @@ public class SecurityConfig {
 
         http
 
-                // JWT API -> nuk përdorim CSRF token
+                // JWT API -> nuk perdorim CSRF token
                 .csrf(csrf -> csrf.disable())
 
-                // JWT -> nuk përdorim session
+                // JWT -> nuk perdorim session
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
@@ -58,9 +58,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // =====================================
-                        // PUBLIC - AUTHENTICATION
-                        // =====================================
+                        // AUTH - PUBLIC
 
                         .requestMatchers(
                                 "/api/auth/register",
@@ -68,21 +66,44 @@ public class SecurityConfig {
                         ).permitAll()
 
 
-                        // =====================================
-                        // PUBLIC - EVENTS
-                        // =====================================
+                        // EVENTS
 
-                        // Çdokush mund të shohë eventet
+                        // PUBLIC - shikon eventet
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/events/**"
                         ).permitAll()
 
+                        // ORGANIZER / ADMIN - krijon event
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/events"
+                        ).hasAnyRole(
+                                "ORGANIZER",
+                                "ADMIN"
+                        )
 
-                        // =====================================
+                        // ORGANIZER owner / ADMIN
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/events/*"
+                        ).hasAnyRole(
+                                "ORGANIZER",
+                                "ADMIN"
+                        )
+
+                        // ORGANIZER owner / ADMIN
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/events/*"
+                        ).hasAnyRole(
+                                "ORGANIZER",
+                                "ADMIN"
+                        )
+
+
                         // CURRENT USER
                         // USER / ORGANIZER / ADMIN
-                        // =====================================
 
                         // Profili personal
                         .requestMatchers(
@@ -96,24 +117,28 @@ public class SecurityConfig {
                                 "/api/users/me"
                         ).authenticated()
 
-                        // Ndryshimi i password-it personal
+                        // Ndryshimi i password-it
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/users/me/password"
                         ).authenticated()
 
 
-                        // =====================================
                         // ADMIN - USER MANAGEMENT
-                        // =====================================
 
-                        // Merr të gjithë users
+                        // Merr te gjithe users
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/users"
                         ).hasRole("ADMIN")
 
-                        // Merr një user sipas ID
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/users/*/role"
+                        ).hasRole("ADMIN")
+
+
+                        // Merr nje user sipas ID
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/users/*"
@@ -126,96 +151,88 @@ public class SecurityConfig {
                         ).hasRole("ADMIN")
 
 
-                        // =====================================
-                        // EVENT MANAGEMENT
-                        // ORGANIZER / ADMIN
-                        // =====================================
-
-                        // Krijon event
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/events"
-                        ).hasAnyRole(
-                                "ORGANIZER",
-                                "ADMIN"
-                        )
-
-                        // Update event
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/events/*"
-                        ).hasAnyRole(
-                                "ORGANIZER",
-                                "ADMIN"
-                        )
-
-                        // Fshin event
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/api/events/*"
-                        ).hasAnyRole(
-                                "ORGANIZER",
-                                "ADMIN"
-                        )
-
-
-                        // =====================================
                         // VENUES
-                        // =====================================
 
-                        // PUBLIC - vetëm lexim
+                        // PUBLIC - vetem lexim
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/venues/**"
                         ).permitAll()
 
-                        // ADMIN - menaxhim venue
+                        // ADMIN - krijon venue
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/venues/**"
                         ).hasRole("ADMIN")
 
+                        // ADMIN - perditeson venue
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/venues/**"
                         ).hasRole("ADMIN")
 
+                        // ADMIN - fshin venue
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/venues/**"
                         ).hasRole("ADMIN")
 
 
-                        // =====================================
                         // CATEGORIES
-                        // =====================================
 
-                        // PUBLIC
+                        // PUBLIC - vetem lexim
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/categories/**"
                         ).permitAll()
 
-                        // ADMIN
+                        // ADMIN - krijon category
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/categories/**"
                         ).hasRole("ADMIN")
 
+                        // ADMIN - perditeson category
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/categories/**"
                         ).hasRole("ADMIN")
 
+                        // ADMIN - fshin category
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/categories/**"
                         ).hasRole("ADMIN")
 
 
-                        // =====================================
+                        // SEATS
+
+                        // PUBLIC - vetem lexim
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/seats/**"
+                        ).permitAll()
+
+                        // ADMIN - krijon seat
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/seats/**"
+                        ).hasRole("ADMIN")
+
+                        // ADMIN - perditeson seat
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/seats/**"
+                        ).hasRole("ADMIN")
+
+                        // ADMIN - fshin seat
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/seats/**"
+                        ).hasRole("ADMIN")
+
+
                         // EVENT SEATS
-                        // =====================================
 
                         // PUBLIC - shikon seat-et e eventit
                         .requestMatchers(
@@ -223,7 +240,8 @@ public class SecurityConfig {
                                 "/api/event-seats/**"
                         ).permitAll()
 
-                        // ORGANIZER / ADMIN
+                        // ORGANIZER owner / ADMIN
+                        // Krijon EventSeat
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/event-seats/**"
@@ -232,14 +250,8 @@ public class SecurityConfig {
                                 "ADMIN"
                         )
 
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/event-seats/**"
-                        ).hasAnyRole(
-                                "ORGANIZER",
-                                "ADMIN"
-                        )
-
+                        // ORGANIZER owner / ADMIN
+                        // Perditeson cmimin
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/event-seats/**"
@@ -248,6 +260,8 @@ public class SecurityConfig {
                                 "ADMIN"
                         )
 
+                        // ORGANIZER owner / ADMIN
+                        // Fshin EventSeat
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/event-seats/**"
@@ -257,12 +271,10 @@ public class SecurityConfig {
                         )
 
 
-                        // =====================================
                         // BOOKINGS
-                        // =====================================
 
                         // USER / ORGANIZER / ADMIN
-                        // Krijon booking
+                        // Krijon booking per user-in aktual
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/bookings"
@@ -274,13 +286,14 @@ public class SecurityConfig {
                                 "/api/bookings/me"
                         ).authenticated()
 
+                        // Booking-et personale sipas statusit
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/bookings/me/status/*"
                         ).authenticated()
 
-                        // ORGANIZER / ADMIN
-                        // Shikon booking-et e një eventi
+                        // ORGANIZER owner / ADMIN
+                        // Shikon booking-et e nje eventi
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/bookings/event/*"
@@ -289,7 +302,7 @@ public class SecurityConfig {
                                 "ADMIN"
                         )
 
-                        // ORGANIZER / ADMIN
+                        // ORGANIZER owner / ADMIN
                         // Konfirmon booking
                         .requestMatchers(
                                 HttpMethod.PATCH,
@@ -306,8 +319,8 @@ public class SecurityConfig {
                                 "/api/bookings/*/cancel"
                         ).authenticated()
 
-                        // ORGANIZER / ADMIN
-                        // Përfundon booking
+                        // ORGANIZER owner / ADMIN
+                        // Perfundon booking
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/bookings/*/complete"
@@ -316,21 +329,62 @@ public class SecurityConfig {
                                 "ADMIN"
                         )
 
-                        // Booking sipas ID
+                        // USER owner / ADMIN
+                        // Merr booking sipas ID
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/bookings/*"
                         ).authenticated()
 
 
-                        // =====================================
-                        // ÇDO REQUEST TJETËR
-                        // =====================================
+                        // REVIEWS
+
+                        // AUTHENTICATED - reviews personale
+                        // Duhet te jete para /api/reviews/*
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/reviews/me"
+                        ).authenticated()
+
+                        // PUBLIC - reviews sipas eventit
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/reviews/event/*"
+                        ).permitAll()
+
+                        // PUBLIC - review sipas ID
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/reviews/*"
+                        ).permitAll()
+
+                        // AUTHENTICATED - krijon review
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/reviews"
+                        ).authenticated()
+
+                        // OWNER / ADMIN
+                        // Ownership kontrollohet ne Service
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/reviews/*"
+                        ).authenticated()
+
+                        // OWNER / ADMIN
+                        // Ownership kontrollohet ne Service
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/reviews/*"
+                        ).authenticated()
+
+
+                        // CDO REQUEST TJETER
 
                         .anyRequest().authenticated()
                 )
 
-                // JWT filter përpara username/password filter
+                // JWT filter perpara username/password filter
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class

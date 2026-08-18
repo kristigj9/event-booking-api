@@ -11,7 +11,6 @@ public interface EventSeatService {
 
     EventSeatResponse createEventSeat(
             Long eventId,
-            Long organizerId,
             EventSeatRequest request
     );
 
@@ -26,12 +25,8 @@ public interface EventSeatService {
 
     EventSeatResponse updatePrice(
             Long eventSeatId,
-            Long organizerId,
             BigDecimal priceSeat
     );
 
-    void deleteEventSeat(
-            Long eventSeatId,
-            Long organizerId
-    );
+    void deleteEventSeat(Long eventSeatId);
 }

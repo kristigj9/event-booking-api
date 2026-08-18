@@ -22,7 +22,7 @@ public class BookingController {
     }
 
     // USER / ORGANIZER / ADMIN
-    // Krijon booking për user-in e autentikuar
+    // Krijon booking per user-in e autentikuar
     @PostMapping
     public ResponseEntity<BookingResponse> createBooking(
             @Valid @RequestBody BookingRequest request
@@ -37,7 +37,7 @@ public class BookingController {
     }
 
     // USER owner / ADMIN
-    // Merr një booking sipas ID
+    // Merr nje booking sipas ID
     @GetMapping("/{bookingId}")
     public ResponseEntity<BookingResponse> getBookingById(
             @PathVariable Long bookingId
@@ -71,7 +71,7 @@ public class BookingController {
     }
 
     // ORGANIZER / ADMIN
-    // Merr booking-et e një eventi
+    // Merr booking-et e nje eventi
     @GetMapping("/event/{eventId}")
     public ResponseEntity<List<BookingResponse>> getBookingsByEvent(
             @PathVariable Long eventId
@@ -107,7 +107,7 @@ public class BookingController {
     }
 
     // ORGANIZER / ADMIN
-    // Shënon booking si completed
+    // Shenon booking si completed
     @PatchMapping("/{bookingId}/complete")
     public ResponseEntity<BookingResponse> completeBooking(
             @PathVariable Long bookingId

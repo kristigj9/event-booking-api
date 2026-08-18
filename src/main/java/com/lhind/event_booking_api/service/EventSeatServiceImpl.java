@@ -2,10 +2,7 @@ package com.lhind.event_booking_api.service;
 
 import com.lhind.event_booking_api.dto.eventseat.EventSeatRequest;
 import com.lhind.event_booking_api.dto.eventseat.EventSeatResponse;
-import com.lhind.event_booking_api.entity.Event;
-import com.lhind.event_booking_api.entity.EventSeat;
-import com.lhind.event_booking_api.entity.Seat;
-import com.lhind.event_booking_api.entity.StatusSeat;
+import com.lhind.event_booking_api.entity.*;
 import com.lhind.event_booking_api.exception.DuplicateResourceException;
 import com.lhind.event_booking_api.exception.InvalidOperationException;
 import com.lhind.event_booking_api.exception.ResourceNotFoundException;
@@ -13,6 +10,7 @@ import com.lhind.event_booking_api.mapper.EventSeatMapper;
 import com.lhind.event_booking_api.repository.EventRepository;
 import com.lhind.event_booking_api.repository.EventSeatRepository;
 import com.lhind.event_booking_api.repository.SeatRepository;
+import com.lhind.event_booking_api.security.AuthenticatedUserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,30 +24,38 @@ public class EventSeatServiceImpl implements EventSeatService {
     private final EventRepository eventRepository;
     private final SeatRepository seatRepository;
     private final EventSeatMapper eventSeatMapper;
+    private final AuthenticatedUserService authenticatedUserService;
 
     public EventSeatServiceImpl(
             EventSeatRepository eventSeatRepository,
             EventRepository eventRepository,
             SeatRepository seatRepository,
-            EventSeatMapper eventSeatMapper
+            EventSeatMapper eventSeatMapper,
+            AuthenticatedUserService authenticatedUserService
     ) {
         this.eventSeatRepository = eventSeatRepository;
         this.eventRepository = eventRepository;
         this.seatRepository = seatRepository;
         this.eventSeatMapper = eventSeatMapper;
+        this.authenticatedUserService = authenticatedUserService;
     }
 
     @Override
     @Transactional
     public EventSeatResponse createEventSeat(
             Long eventId,
-            Long organizerId,
             EventSeatRequest request
     ) {
 
         Event event = findEvent(eventId);
 
-        validateOwnership(event, organizerId);
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
+
+        validateOwnership(
+                event,
+                currentUser
+        );
 
         Seat seat = seatRepository
                 .findByVenueIdAndRowNumberAndSeatNumber(
@@ -64,7 +70,10 @@ public class EventSeatServiceImpl implements EventSeatService {
                 );
 
         if (eventSeatRepository
-                .findByEventIdAndSeatId(eventId, seat.getId())
+                .findByEventIdAndSeatId(
+                        eventId,
+                        seat.getId()
+                )
                 .isPresent()) {
 
             throw new DuplicateResourceException(
@@ -72,12 +81,13 @@ public class EventSeatServiceImpl implements EventSeatService {
             );
         }
 
-        EventSeat eventSeat = EventSeat.builder()
-                .event(event)
-                .seat(seat)
-                .statusSeat(StatusSeat.AVAILABLE)
-                .priceSeat(request.getPriceSeat())
-                .build();
+        EventSeat eventSeat =
+                EventSeat.builder()
+                        .event(event)
+                        .seat(seat)
+                        .statusSeat(StatusSeat.AVAILABLE)
+                        .priceSeat(request.getPriceSeat())
+                        .build();
 
         EventSeat savedEventSeat =
                 eventSeatRepository.save(eventSeat);
@@ -87,7 +97,9 @@ public class EventSeatServiceImpl implements EventSeatService {
 
     @Override
     @Transactional(readOnly = true)
-    public EventSeatResponse getEventSeatById(Long id) {
+    public EventSeatResponse getEventSeatById(
+            Long id
+    ) {
 
         return eventSeatMapper.toResponse(
                 findEventSeat(id)
@@ -96,13 +108,11 @@ public class EventSeatServiceImpl implements EventSeatService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EventSeatResponse> getSeatsByEvent(Long eventId) {
+    public List<EventSeatResponse> getSeatsByEvent(
+            Long eventId
+    ) {
 
-        if (!eventRepository.existsById(eventId)) {
-            throw new ResourceNotFoundException(
-                    "Event not found with id: " + eventId
-            );
-        }
+        findEvent(eventId);
 
         return eventSeatMapper.toResponseList(
                 eventSeatRepository.findByEventId(eventId)
@@ -116,11 +126,7 @@ public class EventSeatServiceImpl implements EventSeatService {
             StatusSeat statusSeat
     ) {
 
-        if (!eventRepository.existsById(eventId)) {
-            throw new ResourceNotFoundException(
-                    "Event not found with id: " + eventId
-            );
-        }
+        findEvent(eventId);
 
         return eventSeatMapper.toResponseList(
                 eventSeatRepository
@@ -135,15 +141,18 @@ public class EventSeatServiceImpl implements EventSeatService {
     @Transactional
     public EventSeatResponse updatePrice(
             Long eventSeatId,
-            Long organizerId,
             BigDecimal priceSeat
     ) {
 
-        EventSeat eventSeat = findEventSeat(eventSeatId);
+        EventSeat eventSeat =
+                findEventSeat(eventSeatId);
+
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
 
         validateOwnership(
                 eventSeat.getEvent(),
-                organizerId
+                currentUser
         );
 
         if (priceSeat == null
@@ -164,50 +173,79 @@ public class EventSeatServiceImpl implements EventSeatService {
     @Override
     @Transactional
     public void deleteEventSeat(
-            Long eventSeatId,
-            Long organizerId
+            Long eventSeatId
     ) {
 
-        EventSeat eventSeat = findEventSeat(eventSeatId);
+        EventSeat eventSeat =
+                findEventSeat(eventSeatId);
+
+        User currentUser =
+                authenticatedUserService.getCurrentUser();
 
         validateOwnership(
                 eventSeat.getEvent(),
-                organizerId
+                currentUser
         );
+
+        /*
+         * Nuk lejojmë fshirjen e një seat-i
+         * që është RESERVED ose SOLD.
+         */
+        if (eventSeat.getStatusSeat()
+                != StatusSeat.AVAILABLE) {
+
+            throw new InvalidOperationException(
+                    "Only available event seats can be deleted"
+            );
+        }
 
         eventSeatRepository.delete(eventSeat);
     }
 
-    // PRIVATE METHODS
+    // -----------------------------
+    // PRIVATE HELPER METHODS
+    // -----------------------------
 
-    private Event findEvent(Long eventId) {
+    private Event findEvent(
+            Long eventId
+    ) {
 
         return eventRepository.findById(eventId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Event not found with id: " + eventId
+                                "Event not found with id: "
+                                        + eventId
                         )
                 );
     }
 
-    private EventSeat findEventSeat(Long id) {
+    private EventSeat findEventSeat(
+            Long id
+    ) {
 
         return eventSeatRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Event seat not found with id: " + id
+                                "Event seat not found with id: "
+                                        + id
                         )
                 );
     }
 
     private void validateOwnership(
             Event event,
-            Long organizerId
+            User currentUser
     ) {
 
-        if (!event.getOrganizer()
-                .getId()
-                .equals(organizerId)) {
+        boolean isAdmin =
+                currentUser.getRole() == Role.ADMIN;
+
+        boolean isOwner =
+                event.getOrganizer()
+                        .getId()
+                        .equals(currentUser.getId());
+
+        if (!isAdmin && !isOwner) {
 
             throw new InvalidOperationException(
                     "You are not allowed to modify seats for this event"

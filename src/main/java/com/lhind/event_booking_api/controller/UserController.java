@@ -1,6 +1,7 @@
 package com.lhind.event_booking_api.controller;
 
 import com.lhind.event_booking_api.dto.user.ChangePasswordRequest;
+import com.lhind.event_booking_api.dto.user.RoleUpdateRequest;
 import com.lhind.event_booking_api.dto.user.UserResponse;
 import com.lhind.event_booking_api.dto.user.UserUpdateRequest;
 import com.lhind.event_booking_api.service.UserService;
@@ -89,5 +90,19 @@ public class UserController {
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .build();
+    }
+
+    @PatchMapping("/{id}/role")
+    public ResponseEntity<UserResponse> updateUserRole(
+            @PathVariable Long id,
+            @Valid @RequestBody RoleUpdateRequest request
+    ) {
+
+        return ResponseEntity.ok(
+                userService.updateUserRole(
+                        id,
+                        request
+                )
+        );
     }
 }

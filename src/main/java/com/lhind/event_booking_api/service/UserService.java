@@ -1,6 +1,7 @@
 package com.lhind.event_booking_api.service;
 
 import com.lhind.event_booking_api.dto.user.ChangePasswordRequest;
+import com.lhind.event_booking_api.dto.user.RoleUpdateRequest;
 import com.lhind.event_booking_api.dto.user.UserResponse;
 import com.lhind.event_booking_api.dto.user.UserUpdateRequest;
 
@@ -29,4 +30,14 @@ public interface UserService {
 
     // ADMIN
     void deleteUser(Long id);
+
+    //USER ROLE
+    UserResponse updateUserRole(
+            Long id,
+            RoleUpdateRequest request
+    );
+
+    
 }
+
+

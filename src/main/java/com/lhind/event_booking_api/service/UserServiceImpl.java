@@ -1,6 +1,7 @@
 package com.lhind.event_booking_api.service;
 
 import com.lhind.event_booking_api.dto.user.ChangePasswordRequest;
+import com.lhind.event_booking_api.dto.user.RoleUpdateRequest;
 import com.lhind.event_booking_api.dto.user.UserResponse;
 import com.lhind.event_booking_api.dto.user.UserUpdateRequest;
 import com.lhind.event_booking_api.entity.User;
@@ -24,6 +25,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticatedUserService authenticatedUserService;
+
 
     public UserServiceImpl(
             UserRepository userRepository,
@@ -150,6 +152,7 @@ public class UserServiceImpl implements UserService {
             );
         }
 
+
         user.setPassword(
                 passwordEncoder.encode(
                         request.getNewPassword()
@@ -171,6 +174,23 @@ public class UserServiceImpl implements UserService {
 
     // PRIVATE HELPER METHODS
 
+    // ADMIN - ndryshon rolin e nje user-i
+    @Override
+    @Transactional
+    public UserResponse updateUserRole(
+            Long id,
+            RoleUpdateRequest request
+    ) {
+
+        User user = findUser(id);
+
+        user.setRole(request.getRole());
+
+        User updatedUser =
+                userRepository.save(user);
+
+        return userMapper.toResponse(updatedUser);
+    }
 
     private User findUser(Long id) {
 

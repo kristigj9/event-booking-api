@@ -10,16 +10,20 @@ import com.lhind.event_booking_api.exception.DuplicateResourceException;
 import com.lhind.event_booking_api.exception.InvalidOperationException;
 import com.lhind.event_booking_api.exception.ResourceNotFoundException;
 import com.lhind.event_booking_api.mapper.ReviewMapper;
+import com.lhind.event_booking_api.repository.BookingRepository;
+import com.lhind.event_booking_api.entity.BookingStatus;
 import com.lhind.event_booking_api.repository.EventRepository;
 import com.lhind.event_booking_api.repository.ReviewRepository;
 import com.lhind.event_booking_api.security.AuthenticatedUserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 
 import java.util.List;
 
 @Service
 public class ReviewServiceImpl implements ReviewService {
+    private final BookingRepository bookingRepository;
 
     private final ReviewRepository reviewRepository;
     private final EventRepository eventRepository;
@@ -29,11 +33,13 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewServiceImpl(
             ReviewRepository reviewRepository,
             EventRepository eventRepository,
+            BookingRepository bookingRepository,
             ReviewMapper reviewMapper,
             AuthenticatedUserService authenticatedUserService
     ) {
         this.reviewRepository = reviewRepository;
         this.eventRepository = eventRepository;
+        this.bookingRepository = bookingRepository;
         this.reviewMapper = reviewMapper;
         this.authenticatedUserService = authenticatedUserService;
     }
@@ -51,6 +57,32 @@ public class ReviewServiceImpl implements ReviewService {
         Event event =
                 findEvent(request.getEventId());
 
+        // Eventi duhet të ketë përfunduar
+        if (event.getEventEndDateTime()
+                .isAfter(LocalDateTime.now())) {
+
+            throw new InvalidOperationException(
+                    "Review can only be created after the event has ended"
+            );
+        }
+
+        // User-i duhet të ketë një booking COMPLETED
+        boolean hasCompletedBooking =
+                bookingRepository
+                        .existsByUserIdAndEventIdAndBookingStatus(
+                                user.getId(),
+                                event.getId(),
+                                BookingStatus.COMPLETED
+                        );
+
+        if (!hasCompletedBooking) {
+
+            throw new InvalidOperationException(
+                    "You can review only events you have attended"
+            );
+        }
+
+        // Vetëm një review për user + event
         if (reviewRepository.existsByUserIdAndEventId(
                 user.getId(),
                 event.getId()
@@ -61,11 +93,12 @@ public class ReviewServiceImpl implements ReviewService {
             );
         }
 
-        Review review = reviewMapper.toEntity(
-                request,
-                user,
-                event
-        );
+        Review review =
+                reviewMapper.toEntity(
+                        request,
+                        user,
+                        event
+                );
 
         Review savedReview =
                 reviewRepository.save(review);
