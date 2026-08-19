@@ -9,6 +9,8 @@ import com.lhind.event_booking_api.exception.ResourceNotFoundException;
 import com.lhind.event_booking_api.mapper.BookingMapper;
 import com.lhind.event_booking_api.repository.*;
 import com.lhind.event_booking_api.security.AuthenticatedUserService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,9 @@ import java.util.Set;
 
 @Service
 public class BookingServiceImpl implements BookingService {
+
+    private static final Logger log =
+            LogManager.getLogger(BookingServiceImpl.class);
 
     private final BookingRepository bookingRepository;
     private final EventRepository eventRepository;
@@ -43,7 +48,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     // CREATE BOOKING
-    // Ul eventAvailableSeats për çdo Seat që kalon në RESERVED
     @Override
     @Transactional
     public BookingResponse createBooking(
@@ -53,11 +57,24 @@ public class BookingServiceImpl implements BookingService {
         User user =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Creating booking for user id: {} and event id: {}",
+                user.getId(),
+                request.getEventId()
+        );
+
         Event event =
                 findEvent(request.getEventId());
 
         if (event.getEventAvailableSeats()
                 < request.getSeats().size()) {
+
+            log.warn(
+                    "Booking rejected for event id: {}. Requested seats: {}, available seats: {}",
+                    event.getId(),
+                    request.getSeats().size(),
+                    event.getEventAvailableSeats()
+            );
 
             throw new InvalidOperationException(
                     "Not enough available seats for this event"
@@ -66,19 +83,21 @@ public class BookingServiceImpl implements BookingService {
 
         validateDuplicateSeats(request.getSeats());
 
-        Booking booking = bookingMapper.toEntity(
-                request,
-                user,
-                event
-        );
+        Booking booking =
+                bookingMapper.toEntity(
+                        request,
+                        user,
+                        event
+                );
 
         for (SeatSelectionRequest seatRequest
                 : request.getSeats()) {
 
-            Seat seat = findSeat(
-                    event,
-                    seatRequest
-            );
+            Seat seat =
+                    findSeat(
+                            event,
+                            seatRequest
+                    );
 
             EventSeat eventSeat =
                     findEventSeat(
@@ -88,6 +107,13 @@ public class BookingServiceImpl implements BookingService {
 
             if (eventSeat.getStatusSeat()
                     != StatusSeat.AVAILABLE) {
+
+                log.warn(
+                        "Seat {}-{} is not available for event id: {}",
+                        seat.getRowNumber(),
+                        seat.getSeatNumber(),
+                        event.getId()
+                );
 
                 throw new InvalidOperationException(
                         "Seat "
@@ -110,6 +136,13 @@ public class BookingServiceImpl implements BookingService {
             eventSeat.setStatusSeat(
                     StatusSeat.RESERVED
             );
+
+            log.debug(
+                    "Seat {}-{} reserved for event id: {}",
+                    seat.getRowNumber(),
+                    seat.getSeatNumber(),
+                    event.getId()
+            );
         }
 
         event.setEventAvailableSeats(
@@ -119,6 +152,12 @@ public class BookingServiceImpl implements BookingService {
 
         Booking savedBooking =
                 bookingRepository.save(booking);
+
+        log.info(
+                "Booking created successfully with id: {} for user id: {}",
+                savedBooking.getId(),
+                user.getId()
+        );
 
         return bookingMapper.toResponse(savedBooking);
     }
@@ -130,13 +169,21 @@ public class BookingServiceImpl implements BookingService {
             Long bookingId
     ) {
 
+        log.debug(
+                "Fetching booking by id: {}",
+                bookingId
+        );
+
         Booking booking =
                 findBooking(bookingId);
 
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
-        validateOwnership(booking, currentUser);
+        validateOwnership(
+                booking,
+                currentUser
+        );
 
         return bookingMapper.toResponse(booking);
     }
@@ -148,6 +195,11 @@ public class BookingServiceImpl implements BookingService {
 
         User currentUser =
                 authenticatedUserService.getCurrentUser();
+
+        log.debug(
+                "Fetching bookings for user id: {}",
+                currentUser.getId()
+        );
 
         return bookingMapper.toResponseList(
                 bookingRepository.findByUserId(
@@ -169,6 +221,12 @@ public class BookingServiceImpl implements BookingService {
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
+        log.debug(
+                "Fetching bookings for event id: {} by user id: {}",
+                eventId,
+                currentUser.getId()
+        );
+
         validateEventOwnership(
                 event,
                 currentUser
@@ -188,6 +246,12 @@ public class BookingServiceImpl implements BookingService {
 
         User currentUser =
                 authenticatedUserService.getCurrentUser();
+
+        log.debug(
+                "Fetching bookings for user id: {} with status: {}",
+                currentUser.getId(),
+                status
+        );
 
         return bookingMapper.toResponseList(
                 bookingRepository
@@ -211,6 +275,12 @@ public class BookingServiceImpl implements BookingService {
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Confirm requested for booking id: {} by user id: {}",
+                bookingId,
+                currentUser.getId()
+        );
+
         validateEventOwnership(
                 booking.getEvent(),
                 currentUser
@@ -218,6 +288,12 @@ public class BookingServiceImpl implements BookingService {
 
         if (booking.getBookingStatus()
                 != BookingStatus.PENDING) {
+
+            log.warn(
+                    "Booking id: {} cannot be confirmed because current status is: {}",
+                    bookingId,
+                    booking.getBookingStatus()
+            );
 
             throw new InvalidOperationException(
                     "Only pending bookings can be confirmed"
@@ -233,6 +309,13 @@ public class BookingServiceImpl implements BookingService {
             if (eventSeat.getStatusSeat()
                     != StatusSeat.RESERVED) {
 
+                log.warn(
+                        "Booking id: {} contains event seat id: {} with invalid status: {}",
+                        bookingId,
+                        eventSeat.getId(),
+                        eventSeat.getStatusSeat()
+                );
+
                 throw new InvalidOperationException(
                         "Booking contains a seat that is not reserved"
                 );
@@ -247,9 +330,15 @@ public class BookingServiceImpl implements BookingService {
                 BookingStatus.CONFIRMED
         );
 
-        return bookingMapper.toResponse(
-                bookingRepository.save(booking)
+        Booking savedBooking =
+                bookingRepository.save(booking);
+
+        log.info(
+                "Booking confirmed successfully with id: {}",
+                savedBooking.getId()
         );
+
+        return bookingMapper.toResponse(savedBooking);
     }
 
     // CANCEL
@@ -265,6 +354,12 @@ public class BookingServiceImpl implements BookingService {
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Cancellation requested for booking id: {} by user id: {}",
+                bookingId,
+                currentUser.getId()
+        );
+
         validateOwnership(
                 booking,
                 currentUser
@@ -272,6 +367,11 @@ public class BookingServiceImpl implements BookingService {
 
         if (booking.getBookingStatus()
                 == BookingStatus.CANCELLED) {
+
+            log.warn(
+                    "Booking id: {} is already cancelled",
+                    bookingId
+            );
 
             throw new InvalidOperationException(
                     "Booking is already cancelled"
@@ -281,15 +381,16 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getBookingStatus()
                 == BookingStatus.COMPLETED) {
 
+            log.warn(
+                    "Completed booking id: {} cannot be cancelled",
+                    bookingId
+            );
+
             throw new InvalidOperationException(
                     "Completed booking cannot be cancelled"
             );
         }
 
-        /*
-         * Lejojmë anulim vetëm sa kohë seats
-         * nuk janë bërë SOLD.
-         */
         for (BookingSeat bookingSeat
                 : booking.getBookingSeats()) {
 
@@ -298,6 +399,12 @@ public class BookingServiceImpl implements BookingService {
 
             if (eventSeat.getStatusSeat()
                     == StatusSeat.SOLD) {
+
+                log.warn(
+                        "Booking id: {} cannot be cancelled because event seat id: {} is SOLD",
+                        bookingId,
+                        eventSeat.getId()
+                );
 
                 throw new InvalidOperationException(
                         "Confirmed seats cannot be released"
@@ -321,9 +428,15 @@ public class BookingServiceImpl implements BookingService {
                 BookingStatus.CANCELLED
         );
 
-        return bookingMapper.toResponse(
-                bookingRepository.save(booking)
+        Booking savedBooking =
+                bookingRepository.save(booking);
+
+        log.info(
+                "Booking cancelled successfully with id: {}",
+                savedBooking.getId()
         );
+
+        return bookingMapper.toResponse(savedBooking);
     }
 
     // COMPLETE
@@ -339,6 +452,12 @@ public class BookingServiceImpl implements BookingService {
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Complete requested for booking id: {} by user id: {}",
+                bookingId,
+                currentUser.getId()
+        );
+
         validateEventOwnership(
                 booking.getEvent(),
                 currentUser
@@ -346,6 +465,12 @@ public class BookingServiceImpl implements BookingService {
 
         if (booking.getBookingStatus()
                 != BookingStatus.CONFIRMED) {
+
+            log.warn(
+                    "Booking id: {} cannot be completed because current status is: {}",
+                    bookingId,
+                    booking.getBookingStatus()
+            );
 
             throw new InvalidOperationException(
                     "Only confirmed bookings can be completed"
@@ -356,11 +481,16 @@ public class BookingServiceImpl implements BookingService {
                 BookingStatus.COMPLETED
         );
 
-        return bookingMapper.toResponse(
-                bookingRepository.save(booking)
-        );
-    }
+        Booking savedBooking =
+                bookingRepository.save(booking);
 
+        log.info(
+                "Booking completed successfully with id: {}",
+                savedBooking.getId()
+        );
+
+        return bookingMapper.toResponse(savedBooking);
+    }
 
     // --------------------------------
     // PRIVATE HELPER METHODS
@@ -371,12 +501,18 @@ public class BookingServiceImpl implements BookingService {
     ) {
 
         return bookingRepository.findById(bookingId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Booking not found with id: "
-                                        + bookingId
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Booking not found with id: {}",
+                            bookingId
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Booking not found with id: "
+                                    + bookingId
+                    );
+                });
     }
 
     private Event findEvent(
@@ -384,12 +520,18 @@ public class BookingServiceImpl implements BookingService {
     ) {
 
         return eventRepository.findById(eventId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Event not found with id: "
-                                        + eventId
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Event not found with id: {}",
+                            eventId
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Event not found with id: "
+                                    + eventId
+                    );
+                });
     }
 
     private Seat findSeat(
@@ -403,14 +545,22 @@ public class BookingServiceImpl implements BookingService {
                         request.getRowNumber(),
                         request.getSeatNumber()
                 )
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Seat not found: "
-                                        + request.getRowNumber()
-                                        + "-"
-                                        + request.getSeatNumber()
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Seat not found in venue id: {}. Seat: {}-{}",
+                            event.getVenue().getId(),
+                            request.getRowNumber(),
+                            request.getSeatNumber()
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Seat not found: "
+                                    + request.getRowNumber()
+                                    + "-"
+                                    + request.getSeatNumber()
+                    );
+                });
     }
 
     private EventSeat findEventSeat(
@@ -423,11 +573,18 @@ public class BookingServiceImpl implements BookingService {
                         eventId,
                         seatId
                 )
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Seat is not assigned to this event"
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Seat id: {} is not assigned to event id: {}",
+                            seatId,
+                            eventId
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Seat is not assigned to this event"
+                    );
+                });
     }
 
     private void validateOwnership(
@@ -445,10 +602,23 @@ public class BookingServiceImpl implements BookingService {
 
         if (!isAdmin && !isOwner) {
 
+            log.warn(
+                    "Unauthorized booking access attempt. Booking id: {}, user id: {}",
+                    booking.getId(),
+                    currentUser.getId()
+            );
+
             throw new InvalidOperationException(
                     "You are not allowed to access or modify this booking"
             );
         }
+
+        log.debug(
+                "Booking ownership validation successful. Booking id: {}, user id: {}, admin: {}",
+                booking.getId(),
+                currentUser.getId(),
+                isAdmin
+        );
     }
 
     private void validateEventOwnership(
@@ -466,10 +636,23 @@ public class BookingServiceImpl implements BookingService {
 
         if (!isAdmin && !isOrganizer) {
 
+            log.warn(
+                    "Unauthorized booking management attempt. Event id: {}, user id: {}",
+                    event.getId(),
+                    currentUser.getId()
+            );
+
             throw new InvalidOperationException(
                     "You are not allowed to manage bookings for this event"
             );
         }
+
+        log.debug(
+                "Event booking management authorization successful. Event id: {}, user id: {}, admin: {}",
+                event.getId(),
+                currentUser.getId(),
+                isAdmin
+        );
     }
 
     private void validateDuplicateSeats(
@@ -487,6 +670,11 @@ public class BookingServiceImpl implements BookingService {
                             + seat.getSeatNumber();
 
             if (!uniqueSeats.add(key)) {
+
+                log.warn(
+                        "Duplicate seat detected in booking request: {}",
+                        key
+                );
 
                 throw new InvalidOperationException(
                         "The same seat cannot be selected more than once"

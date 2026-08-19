@@ -9,6 +9,8 @@ import com.lhind.event_booking_api.exception.ResourceNotFoundException;
 import com.lhind.event_booking_api.mapper.SeatMapper;
 import com.lhind.event_booking_api.repository.SeatRepository;
 import com.lhind.event_booking_api.repository.VenueRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,9 @@ import java.util.List;
 
 @Service
 public class SeatServiceImpl implements SeatService {
+
+    private static final Logger log =
+            LogManager.getLogger(SeatServiceImpl.class);
 
     private final SeatRepository seatRepository;
     private final VenueRepository venueRepository;
@@ -34,23 +39,52 @@ public class SeatServiceImpl implements SeatService {
     // CREATE
     @Override
     @Transactional
-    public SeatResponse createSeat(SeatRequest request) {
+    public SeatResponse createSeat(
+            SeatRequest request
+    ) {
 
-        Venue venue = findVenue(request);
+        Venue venue =
+                findVenue(request);
 
-        if (seatRepository.existsByVenueIdAndRowNumberAndSeatNumber(
-                venue.getId(),
+        log.info(
+                "Creating seat {}-{} for venue id: {}",
                 request.getRowNumber(),
-                request.getSeatNumber()
-        )) {
+                request.getSeatNumber(),
+                venue.getId()
+        );
+
+        if (seatRepository
+                .existsByVenueIdAndRowNumberAndSeatNumber(
+                        venue.getId(),
+                        request.getRowNumber(),
+                        request.getSeatNumber()
+                )) {
+
+            log.warn(
+                    "Seat creation rejected. Seat {}-{} already exists in venue id: {}",
+                    request.getRowNumber(),
+                    request.getSeatNumber(),
+                    venue.getId()
+            );
+
             throw new DuplicateResourceException(
                     "Seat already exists in this venue"
             );
         }
 
-        Seat seat = seatMapper.toEntity(request, venue);
+        Seat seat =
+                seatMapper.toEntity(
+                        request,
+                        venue
+                );
 
-        Seat savedSeat = seatRepository.save(seat);
+        Seat savedSeat =
+                seatRepository.save(seat);
+
+        log.info(
+                "Seat created successfully with id: {}",
+                savedSeat.getId()
+        );
 
         return seatMapper.toResponse(savedSeat);
     }
@@ -58,9 +92,17 @@ public class SeatServiceImpl implements SeatService {
     // GET BY ID
     @Override
     @Transactional(readOnly = true)
-    public SeatResponse getSeatById(Long id) {
+    public SeatResponse getSeatById(
+            Long id
+    ) {
 
-        Seat seat = findSeat(id);
+        log.debug(
+                "Fetching seat by id: {}",
+                id
+        );
+
+        Seat seat =
+                findSeat(id);
 
         return seatMapper.toResponse(seat);
     }
@@ -70,6 +112,10 @@ public class SeatServiceImpl implements SeatService {
     @Transactional(readOnly = true)
     public List<SeatResponse> getAllSeats() {
 
+        log.debug(
+                "Fetching all seats"
+        );
+
         return seatMapper.toResponseList(
                 seatRepository.findAll()
         );
@@ -78,9 +124,22 @@ public class SeatServiceImpl implements SeatService {
     // GET BY VENUE
     @Override
     @Transactional(readOnly = true)
-    public List<SeatResponse> getSeatsByVenue(Long venueId) {
+    public List<SeatResponse> getSeatsByVenue(
+            Long venueId
+    ) {
+
+        log.debug(
+                "Fetching seats for venue id: {}",
+                venueId
+        );
 
         if (!venueRepository.existsById(venueId)) {
+
+            log.warn(
+                    "Venue not found with id: {} while fetching seats",
+                    venueId
+            );
+
             throw new ResourceNotFoundException(
                     "Venue not found with id: " + venueId
             );
@@ -99,9 +158,16 @@ public class SeatServiceImpl implements SeatService {
             SeatRequest request
     ) {
 
-        Seat seat = findSeat(id);
+        log.info(
+                "Update requested for seat id: {}",
+                id
+        );
 
-        Venue venue = findVenue(request);
+        Seat seat =
+                findSeat(id);
+
+        Venue venue =
+                findVenue(request);
 
         boolean seatChanged =
                 !seat.getVenue().getId().equals(venue.getId())
@@ -109,11 +175,19 @@ public class SeatServiceImpl implements SeatService {
                         || !seat.getSeatNumber().equals(request.getSeatNumber());
 
         if (seatChanged
-                && seatRepository.existsByVenueIdAndRowNumberAndSeatNumber(
-                venue.getId(),
-                request.getRowNumber(),
-                request.getSeatNumber()
-        )) {
+                && seatRepository
+                .existsByVenueIdAndRowNumberAndSeatNumber(
+                        venue.getId(),
+                        request.getRowNumber(),
+                        request.getSeatNumber()
+                )) {
+
+            log.warn(
+                    "Seat update rejected. Seat {}-{} already exists in venue id: {}",
+                    request.getRowNumber(),
+                    request.getSeatNumber(),
+                    venue.getId()
+            );
 
             throw new DuplicateResourceException(
                     "Seat already exists in this venue"
@@ -126,7 +200,13 @@ public class SeatServiceImpl implements SeatService {
                 venue
         );
 
-        Seat updatedSeat = seatRepository.save(seat);
+        Seat updatedSeat =
+                seatRepository.save(seat);
+
+        log.info(
+                "Seat updated successfully with id: {}",
+                updatedSeat.getId()
+        );
 
         return seatMapper.toResponse(updatedSeat);
     }
@@ -134,42 +214,75 @@ public class SeatServiceImpl implements SeatService {
     // DELETE
     @Override
     @Transactional
-    public void deleteSeat(Long id) {
+    public void deleteSeat(
+            Long id
+    ) {
 
-        Seat seat = findSeat(id);
+        log.info(
+                "Delete requested for seat id: {}",
+                id
+        );
+
+        Seat seat =
+                findSeat(id);
 
         seatRepository.delete(seat);
+
+        log.info(
+                "Seat deleted successfully with id: {}",
+                id
+        );
     }
 
-    // PRIVATE METHODS
-    //Metoda private ndihmese qe perdoren brenda metodave te tjera dhe vetem brenda klases:
-    //getSeatById()
-    //updateSeat()
-    //deleteSeat()
+    // -----------------------------
+    // PRIVATE HELPER METHODS
+    // -----------------------------
 
-
-    private Seat findSeat(Long id) {
+    private Seat findSeat(
+            Long id
+    ) {
 
         return seatRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Seat not found with id: " + id
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Seat not found with id: {}",
+                            id
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Seat not found with id: " + id
+                    );
+                });
     }
 
-    private Venue findVenue(SeatRequest request) {
+    private Venue findVenue(
+            SeatRequest request
+    ) {
+
+        String venueName =
+                request.getVenue().getVenueName();
+
+        String venueCity =
+                request.getVenue().getVenueCity();
 
         return venueRepository
                 .findByVenueNameAndVenueCity(
-                        request.getVenue().getVenueName(),
-                        request.getVenue().getVenueCity()
+                        venueName,
+                        venueCity
                 )
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Venue not found: "
-                                        + request.getVenue().getVenueName()
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Venue not found with name '{}' and city '{}'",
+                            venueName,
+                            venueCity
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Venue not found: "
+                                    + venueName
+                    );
+                });
     }
 }

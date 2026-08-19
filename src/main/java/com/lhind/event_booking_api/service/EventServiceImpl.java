@@ -17,6 +17,8 @@ import com.lhind.event_booking_api.repository.CategoryRepository;
 import com.lhind.event_booking_api.repository.EventRepository;
 import com.lhind.event_booking_api.repository.VenueRepository;
 import com.lhind.event_booking_api.security.AuthenticatedUserService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,9 @@ import java.util.List;
 
 @Service
 public class EventServiceImpl implements EventService {
+
+    private static final Logger log =
+            LogManager.getLogger(EventServiceImpl.class);
 
     private final EventRepository eventRepository;
     private final VenueRepository venueRepository;
@@ -56,6 +61,12 @@ public class EventServiceImpl implements EventService {
         User organizer =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Creating event '{}' by organizer id: {}",
+                request.getEventName(),
+                organizer.getId()
+        );
+
         Venue venue =
                 findVenue(
                         request.getVenue().getVenueName(),
@@ -86,6 +97,11 @@ public class EventServiceImpl implements EventService {
         Event savedEvent =
                 eventRepository.save(event);
 
+        log.info(
+                "Event created successfully with id: {}",
+                savedEvent.getId()
+        );
+
         return eventMapper.toResponse(savedEvent);
     }
 
@@ -93,6 +109,11 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public EventResponse getEventById(Long id) {
+
+        log.debug(
+                "Fetching event by id: {}",
+                id
+        );
 
         Event event =
                 findEvent(id);
@@ -105,6 +126,10 @@ public class EventServiceImpl implements EventService {
     @Transactional(readOnly = true)
     public List<EventResponse> getAllEvents() {
 
+        log.debug(
+                "Fetching all events"
+        );
+
         return eventMapper.toResponseList(
                 eventRepository.findAll()
         );
@@ -116,6 +141,11 @@ public class EventServiceImpl implements EventService {
     public List<EventResponse> getEventsByOrganizer(
             Long organizerId
     ) {
+
+        log.debug(
+                "Fetching events for organizer id: {}",
+                organizerId
+        );
 
         return eventMapper.toResponseList(
                 eventRepository.findByOrganizerId(
@@ -131,6 +161,11 @@ public class EventServiceImpl implements EventService {
             EventStatus status
     ) {
 
+        log.debug(
+                "Fetching events by status: {}",
+                status
+        );
+
         return eventMapper.toResponseList(
                 eventRepository.findByEventStatus(
                         status
@@ -145,6 +180,11 @@ public class EventServiceImpl implements EventService {
             Long categoryId
     ) {
 
+        log.debug(
+                "Fetching events by category id: {}",
+                categoryId
+        );
+
         return eventMapper.toResponseList(
                 eventRepository.findByCategoriesId(
                         categoryId
@@ -158,6 +198,11 @@ public class EventServiceImpl implements EventService {
     public List<EventResponse> getEventsByVenue(
             Long venueId
     ) {
+
+        log.debug(
+                "Fetching events by venue id: {}",
+                venueId
+        );
 
         return eventMapper.toResponseList(
                 eventRepository.findByVenueId(
@@ -179,6 +224,12 @@ public class EventServiceImpl implements EventService {
 
         User currentUser =
                 authenticatedUserService.getCurrentUser();
+
+        log.info(
+                "Update requested for event id: {} by user id: {}",
+                eventId,
+                currentUser.getId()
+        );
 
         validateOwnership(
                 event,
@@ -216,6 +267,13 @@ public class EventServiceImpl implements EventService {
         if (request.getEventTotalSeats()
                 < occupiedSeats) {
 
+            log.warn(
+                    "Event update rejected. Event id: {}, requested seats: {}, occupied seats: {}",
+                    eventId,
+                    request.getEventTotalSeats(),
+                    occupiedSeats
+            );
+
             throw new InvalidOperationException(
                     "Total seats cannot be less than already reserved or sold seats"
             );
@@ -236,6 +294,11 @@ public class EventServiceImpl implements EventService {
         Event updatedEvent =
                 eventRepository.save(event);
 
+        log.info(
+                "Event updated successfully with id: {}",
+                updatedEvent.getId()
+        );
+
         return eventMapper.toResponse(updatedEvent);
     }
 
@@ -250,12 +313,23 @@ public class EventServiceImpl implements EventService {
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Delete requested for event id: {} by user id: {}",
+                eventId,
+                currentUser.getId()
+        );
+
         validateOwnership(
                 event,
                 currentUser
         );
 
         eventRepository.delete(event);
+
+        log.info(
+                "Event deleted successfully with id: {}",
+                eventId
+        );
     }
 
     // --------------------------------
@@ -267,12 +341,18 @@ public class EventServiceImpl implements EventService {
     ) {
 
         return eventRepository.findById(eventId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Event not found with id: "
-                                        + eventId
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Event not found with id: {}",
+                            eventId
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Event not found with id: "
+                                    + eventId
+                    );
+                });
     }
 
     private Venue findVenue(
@@ -285,14 +365,21 @@ public class EventServiceImpl implements EventService {
                         venueName,
                         venueCity
                 )
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Venue not found: "
-                                        + venueName
-                                        + " - "
-                                        + venueCity
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Venue not found with name '{}' and city '{}'",
+                            venueName,
+                            venueCity
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Venue not found: "
+                                    + venueName
+                                    + " - "
+                                    + venueCity
+                    );
+                });
     }
 
     private List<Category> findCategories(
@@ -307,12 +394,18 @@ public class EventServiceImpl implements EventService {
                 .map(name ->
                         categoryRepository
                                 .findByNameCategory(name)
-                                .orElseThrow(() ->
-                                        new ResourceNotFoundException(
-                                                "Category not found: "
-                                                        + name
-                                        )
-                                )
+                                .orElseThrow(() -> {
+
+                                    log.warn(
+                                            "Category not found with name: {}",
+                                            name
+                                    );
+
+                                    return new ResourceNotFoundException(
+                                            "Category not found: "
+                                                    + name
+                                    );
+                                })
                 )
                 .toList();
     }
@@ -323,6 +416,12 @@ public class EventServiceImpl implements EventService {
     ) {
 
         if (!endDateTime.isAfter(startDateTime)) {
+
+            log.warn(
+                    "Invalid event dates. Start: {}, End: {}",
+                    startDateTime,
+                    endDateTime
+            );
 
             throw new InvalidOperationException(
                     "Event end date must be after start date"
@@ -336,6 +435,13 @@ public class EventServiceImpl implements EventService {
     ) {
 
         if (totalSeats > venue.getVenueCapacity()) {
+
+            log.warn(
+                    "Event capacity validation failed. Requested seats: {}, venue capacity: {}, venue id: {}",
+                    totalSeats,
+                    venue.getVenueCapacity(),
+                    venue.getId()
+            );
 
             throw new InvalidOperationException(
                     "Event total seats cannot exceed venue capacity"
@@ -354,6 +460,13 @@ public class EventServiceImpl implements EventService {
         EventStatus newStatus =
                 request.getEventStatus();
 
+        log.debug(
+                "Validating event status transition for event id: {} from {} to {}",
+                event.getId(),
+                currentStatus,
+                newStatus
+        );
+
         // Nese statusi nuk ndryshon, lejohet
         if (currentStatus == newStatus) {
             return;
@@ -362,6 +475,11 @@ public class EventServiceImpl implements EventService {
         // Event i perfunduar nuk mund te rikthehet
         if (currentStatus == EventStatus.COMPLETED) {
 
+            log.warn(
+                    "Invalid status transition for completed event id: {}",
+                    event.getId()
+            );
+
             throw new InvalidOperationException(
                     "Completed event status cannot be changed"
             );
@@ -369,6 +487,11 @@ public class EventServiceImpl implements EventService {
 
         // Event i anuluar nuk mund te riaktivizohet
         if (currentStatus == EventStatus.CANCELLED) {
+
+            log.warn(
+                    "Invalid status transition for cancelled event id: {}",
+                    event.getId()
+            );
 
             throw new InvalidOperationException(
                     "Cancelled event status cannot be changed"
@@ -380,6 +503,12 @@ public class EventServiceImpl implements EventService {
 
             if (newStatus != EventStatus.PUBLISHED
                     && newStatus != EventStatus.CANCELLED) {
+
+                log.warn(
+                        "Invalid DRAFT status transition for event id: {} to {}",
+                        event.getId(),
+                        newStatus
+                );
 
                 throw new InvalidOperationException(
                         "Draft event can only be published or cancelled"
@@ -401,6 +530,12 @@ public class EventServiceImpl implements EventService {
                 if (request.getEventEndDateTime()
                         .isAfter(LocalDateTime.now())) {
 
+                    log.warn(
+                            "Event id: {} cannot be completed before end date: {}",
+                            event.getId(),
+                            request.getEventEndDateTime()
+                    );
+
                     throw new InvalidOperationException(
                             "Event cannot be completed before it has ended"
                     );
@@ -409,10 +544,23 @@ public class EventServiceImpl implements EventService {
                 return;
             }
 
+            log.warn(
+                    "Invalid PUBLISHED status transition for event id: {} to {}",
+                    event.getId(),
+                    newStatus
+            );
+
             throw new InvalidOperationException(
                     "Published event can only be completed or cancelled"
             );
         }
+
+        log.warn(
+                "Invalid event status transition for event id: {} from {} to {}",
+                event.getId(),
+                currentStatus,
+                newStatus
+        );
 
         throw new InvalidOperationException(
                 "Invalid event status transition"
@@ -434,9 +582,22 @@ public class EventServiceImpl implements EventService {
 
         if (!isAdmin && !isOwner) {
 
+            log.warn(
+                    "Unauthorized event modification attempt. Event id: {}, user id: {}",
+                    event.getId(),
+                    currentUser.getId()
+            );
+
             throw new InvalidOperationException(
                     "You are not allowed to modify this event"
             );
         }
+
+        log.debug(
+                "Event ownership validation successful. Event id: {}, user id: {}, admin: {}",
+                event.getId(),
+                currentUser.getId(),
+                isAdmin
+        );
     }
 }

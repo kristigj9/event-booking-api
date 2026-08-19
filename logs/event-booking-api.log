@@ -1,0 +1,304 @@
+2026-08-20 00:07:02.676 INFO  [main] com.lhind.event_booking_api.EventBookingApiApplicationTests - Starting EventBookingApiApplicationTests using Java 17.0.12 with PID 22776 (started by krist in C:\Users\krist\OneDrive\Desktop\event-booking-api)
+2026-08-20 00:07:02.695 DEBUG [main] com.lhind.event_booking_api.EventBookingApiApplicationTests - Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-08-20 00:07:02.697 INFO  [main] com.lhind.event_booking_api.EventBookingApiApplicationTests - The following 1 profile is active: "test"
+2026-08-20 00:07:03.592 INFO  [main] org.springframework.data.repository.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-20 00:07:03.697 INFO  [main] org.springframework.data.repository.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 89 ms. Found 9 JPA repository interfaces.
+2026-08-20 00:07:04.716 INFO  [main] org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-20 00:07:06.160 INFO  [main] org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-20 00:07:06.248 INFO  [main] org.springframework.data.jpa.repository.query.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-08-20 00:07:06.553 INFO  [main] org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+2026-08-20 00:07:07.641 INFO  [main] com.lhind.event_booking_api.EventBookingApiApplicationTests - Started EventBookingApiApplicationTests in 5.422 seconds (process running for 11.047)
+2026-08-20 00:07:07.646 WARN  [main] org.springdoc.core.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-08-20 00:07:07.646 WARN  [main] org.springdoc.core.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-08-20 00:07:07.686 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.BookingRepositoryTest]: BookingRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:07.721 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.BookingRepositoryTest
+2026-08-20 00:07:07.723 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.BookingRepositoryTest]: BookingRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:07.734 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.BookingRepositoryTest
+2026-08-20 00:07:07.782 INFO  [main] com.lhind.event_booking_api.repository.BookingRepositoryTest - Starting BookingRepositoryTest using Java 17.0.12 with PID 22776 (started by krist in C:\Users\krist\OneDrive\Desktop\event-booking-api)
+2026-08-20 00:07:07.783 DEBUG [main] com.lhind.event_booking_api.repository.BookingRepositoryTest - Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-08-20 00:07:07.783 INFO  [main] com.lhind.event_booking_api.repository.BookingRepositoryTest - The following 1 profile is active: "test"
+2026-08-20 00:07:07.907 INFO  [main] org.springframework.data.repository.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-20 00:07:07.936 INFO  [main] org.springframework.data.repository.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 27 ms. Found 9 JPA repository interfaces.
+2026-08-20 00:07:08.009 INFO  [main] org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-20 00:07:08.171 INFO  [main] org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-20 00:07:08.268 INFO  [main] com.lhind.event_booking_api.repository.BookingRepositoryTest - Started BookingRepositoryTest in 0.526 seconds (process running for 11.672)
+2026-08-20 00:07:09.431 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.CategoryRepositoryTest]: CategoryRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:09.461 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.CategoryRepositoryTest
+2026-08-20 00:07:09.462 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.CategoryRepositoryTest]: CategoryRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:09.481 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.CategoryRepositoryTest
+2026-08-20 00:07:09.642 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.EventRepositoryTest]: EventRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:09.685 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.EventRepositoryTest
+2026-08-20 00:07:09.687 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.EventRepositoryTest]: EventRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:09.707 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.EventRepositoryTest
+2026-08-20 00:07:10.069 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.EventSeatRepositoryTest]: EventSeatRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:10.094 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.EventSeatRepositoryTest
+2026-08-20 00:07:10.095 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.EventSeatRepositoryTest]: EventSeatRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:10.113 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.EventSeatRepositoryTest
+2026-08-20 00:07:10.439 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.ReviewRepositoryTest]: ReviewRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:10.474 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.ReviewRepositoryTest
+2026-08-20 00:07:10.475 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.ReviewRepositoryTest]: ReviewRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:10.494 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.ReviewRepositoryTest
+2026-08-20 00:07:10.859 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.SeatRepositoryTest]: SeatRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:10.888 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.SeatRepositoryTest
+2026-08-20 00:07:10.890 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.SeatRepositoryTest]: SeatRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:10.912 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.SeatRepositoryTest
+2026-08-20 00:07:11.153 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.UserRepositoryTest]: UserRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:11.182 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.UserRepositoryTest
+2026-08-20 00:07:11.183 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.UserRepositoryTest]: UserRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:11.210 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.UserRepositoryTest
+2026-08-20 00:07:11.383 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.VenueRepositoryTest]: VenueRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:11.417 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.VenueRepositoryTest
+2026-08-20 00:07:11.419 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.repository.VenueRepositoryTest]: VenueRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:11.439 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.repository.VenueRepositoryTest
+2026-08-20 00:07:11.550 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.security.SecurityConfigTest]: SecurityConfigTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:11.583 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.security.SecurityConfigTest
+2026-08-20 00:07:11.585 INFO  [main] org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.lhind.event_booking_api.security.SecurityConfigTest]: SecurityConfigTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-20 00:07:11.588 INFO  [main] org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.lhind.event_booking_api.EventBookingApiApplication for test class com.lhind.event_booking_api.security.SecurityConfigTest
+2026-08-20 00:07:11.666 INFO  [main] com.lhind.event_booking_api.security.SecurityConfigTest - Starting SecurityConfigTest using Java 17.0.12 with PID 22776 (started by krist in C:\Users\krist\OneDrive\Desktop\event-booking-api)
+2026-08-20 00:07:11.667 DEBUG [main] com.lhind.event_booking_api.security.SecurityConfigTest - Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-08-20 00:07:11.668 INFO  [main] com.lhind.event_booking_api.security.SecurityConfigTest - The following 1 profile is active: "test"
+2026-08-20 00:07:12.120 INFO  [main] org.springframework.data.repository.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-20 00:07:12.165 INFO  [main] org.springframework.data.repository.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 43 ms. Found 9 JPA repository interfaces.
+2026-08-20 00:07:12.397 INFO  [main] org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-20 00:07:12.647 INFO  [main] org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-20 00:07:12.728 INFO  [main] org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+2026-08-20 00:07:13.177 DEBUG [main] com.lhind.event_booking_api.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-08-20 00:07:13.177 INFO  [main] org.springframework.boot.test.mock.web.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-08-20 00:07:13.178 INFO  [main] org.springframework.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-08-20 00:07:13.181 INFO  [main] org.springframework.test.web.servlet.TestDispatcherServlet - Completed initialization in 3 ms
+2026-08-20 00:07:13.235 INFO  [main] com.lhind.event_booking_api.security.SecurityConfigTest - Started SecurityConfigTest in 1.639 seconds (process running for 16.641)
+2026-08-20 00:07:13.236 WARN  [main] org.springdoc.core.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-08-20 00:07:13.237 WARN  [main] org.springdoc.core.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-08-20 00:07:13.430 WARN  [main] org.hibernate.validator.internal.metadata.aggregated.CascadingMetaDataBuilder - HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: categories
+2026-08-20 00:07:13.501 WARN  [main] org.hibernate.validator.internal.metadata.aggregated.CascadingMetaDataBuilder - HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: seats
+2026-08-20 00:07:15.022 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Confirm requested for booking id: 1 by user id: 2
+2026-08-20 00:07:15.022 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Event booking management authorization successful. Event id: 1, user id: 2, admin: false
+2026-08-20 00:07:15.023 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking confirmed successfully with id: 1
+2026-08-20 00:07:15.040 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Cancellation requested for booking id: 1 by user id: 99
+2026-08-20 00:07:15.040 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Unauthorized booking access attempt. Booking id: 1, user id: 99
+2026-08-20 00:07:15.053 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Creating booking for user id: 1 and event id: 1
+2026-08-20 00:07:15.058 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Seat A-1 reserved for event id: 1
+2026-08-20 00:07:15.058 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking created successfully with id: 1 for user id: 1
+2026-08-20 00:07:15.067 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Complete requested for booking id: 1 by user id: 2
+2026-08-20 00:07:15.067 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Event booking management authorization successful. Event id: 1, user id: 2, admin: false
+2026-08-20 00:07:15.067 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking completed successfully with id: 1
+2026-08-20 00:07:15.074 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Fetching bookings for user id: 1
+2026-08-20 00:07:15.084 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Creating booking for user id: 1 and event id: 1
+2026-08-20 00:07:15.085 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Seat not found in venue id: 1. Seat: A-1
+2026-08-20 00:07:15.096 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Confirm requested for booking id: 1 by user id: 99
+2026-08-20 00:07:15.096 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Unauthorized booking management attempt. Event id: 1, user id: 99
+2026-08-20 00:07:15.106 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Fetching bookings for event id: 1 by user id: 2
+2026-08-20 00:07:15.106 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Event booking management authorization successful. Event id: 1, user id: 2, admin: false
+2026-08-20 00:07:15.113 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Fetching booking by id: 1
+2026-08-20 00:07:15.113 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Unauthorized booking access attempt. Booking id: 1, user id: 99
+2026-08-20 00:07:15.122 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Cancellation requested for booking id: 1 by user id: 1
+2026-08-20 00:07:15.123 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking ownership validation successful. Booking id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.123 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking id: 1 is already cancelled
+2026-08-20 00:07:15.130 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Creating booking for user id: 1 and event id: 1
+2026-08-20 00:07:15.131 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Seat id: 1 is not assigned to event id: 1
+2026-08-20 00:07:15.137 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Cancellation requested for booking id: 1 by user id: 1
+2026-08-20 00:07:15.138 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking ownership validation successful. Booking id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.138 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Completed booking id: 1 cannot be cancelled
+2026-08-20 00:07:15.145 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Fetching bookings for user id: 1 with status: PENDING
+2026-08-20 00:07:15.153 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Confirm requested for booking id: 1 by user id: 2
+2026-08-20 00:07:15.153 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Event booking management authorization successful. Event id: 1, user id: 2, admin: false
+2026-08-20 00:07:15.153 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking id: 1 cannot be confirmed because current status is: CONFIRMED
+2026-08-20 00:07:15.159 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Complete requested for booking id: 1 by user id: 2
+2026-08-20 00:07:15.160 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Event booking management authorization successful. Event id: 1, user id: 2, admin: false
+2026-08-20 00:07:15.160 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking id: 1 cannot be completed because current status is: PENDING
+2026-08-20 00:07:15.169 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Cancellation requested for booking id: 1 by user id: 1
+2026-08-20 00:07:15.169 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking ownership validation successful. Booking id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.169 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking id: 1 cannot be cancelled because event seat id: 1 is SOLD
+2026-08-20 00:07:15.177 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Creating booking for user id: 1 and event id: 1
+2026-08-20 00:07:15.177 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking rejected for event id: 1. Requested seats: 1, available seats: 0
+2026-08-20 00:07:15.185 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Creating booking for user id: 1 and event id: 1
+2026-08-20 00:07:15.185 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Seat A-1 is not available for event id: 1
+2026-08-20 00:07:15.194 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Confirm requested for booking id: 1 by user id: 2
+2026-08-20 00:07:15.194 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Event booking management authorization successful. Event id: 1, user id: 2, admin: false
+2026-08-20 00:07:15.194 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking id: 1 contains event seat id: 1 with invalid status: AVAILABLE
+2026-08-20 00:07:15.202 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Complete requested for booking id: 1 by user id: 99
+2026-08-20 00:07:15.203 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Unauthorized booking management attempt. Event id: 1, user id: 99
+2026-08-20 00:07:15.212 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Creating booking for user id: 1 and event id: 1
+2026-08-20 00:07:15.213 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Duplicate seat detected in booking request: A-1
+2026-08-20 00:07:15.222 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Fetching bookings for event id: 1 by user id: 99
+2026-08-20 00:07:15.223 WARN  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Unauthorized booking management attempt. Event id: 1, user id: 99
+2026-08-20 00:07:15.228 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Fetching booking by id: 1
+2026-08-20 00:07:15.228 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking ownership validation successful. Booking id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.236 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Cancellation requested for booking id: 1 by user id: 1
+2026-08-20 00:07:15.237 DEBUG [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking ownership validation successful. Booking id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.237 INFO  [main] com.lhind.event_booking_api.service.BookingServiceImpl - Booking cancelled successfully with id: 1
+2026-08-20 00:07:15.420 DEBUG [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Fetching category by id: 99
+2026-08-20 00:07:15.422 WARN  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Category not found with id: 99
+2026-08-20 00:07:15.428 INFO  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Creating category with name: Music
+2026-08-20 00:07:15.428 INFO  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Category created successfully with id: 1 and name: Music
+2026-08-20 00:07:15.433 INFO  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Update requested for category id: 99
+2026-08-20 00:07:15.434 WARN  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Category not found with id: 99
+2026-08-20 00:07:15.439 DEBUG [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Fetching category by id: 1
+2026-08-20 00:07:15.444 INFO  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Update requested for category id: 1
+2026-08-20 00:07:15.445 INFO  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Category updated successfully with id: 1
+2026-08-20 00:07:15.453 INFO  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Update requested for category id: 1
+2026-08-20 00:07:15.453 WARN  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Category update rejected. Category name already exists: Sport
+2026-08-20 00:07:15.458 INFO  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Delete requested for category id: 99
+2026-08-20 00:07:15.459 WARN  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Category not found with id: 99
+2026-08-20 00:07:15.464 DEBUG [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Fetching all categories
+2026-08-20 00:07:15.470 INFO  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Delete requested for category id: 1
+2026-08-20 00:07:15.471 INFO  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Category deleted successfully with id: 1
+2026-08-20 00:07:15.477 INFO  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Creating category with name: Music
+2026-08-20 00:07:15.477 WARN  [main] com.lhind.event_booking_api.service.CategoryServiceImpl - Category creation rejected because category already exists with name: Music
+2026-08-20 00:07:15.564 DEBUG [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Fetching event seat by id: 1
+2026-08-20 00:07:15.571 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Price update requested for event seat id: 1 by user id: 99
+2026-08-20 00:07:15.571 WARN  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Unauthorized event seat modification attempt. Event id: 1, user id: 99
+2026-08-20 00:07:15.578 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Price update requested for event seat id: 1 by user id: 1
+2026-08-20 00:07:15.578 DEBUG [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat ownership validation successful. Event id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.579 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat price updated successfully. Event seat id: 1, new price: 35.00
+2026-08-20 00:07:15.583 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Delete requested for event seat id: 1 by user id: 1
+2026-08-20 00:07:15.583 DEBUG [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat ownership validation successful. Event id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.583 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat deleted successfully with id: 1
+2026-08-20 00:07:15.590 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Creating event seat for event id: 1 by user id: 99
+2026-08-20 00:07:15.590 WARN  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Unauthorized event seat modification attempt. Event id: 1, user id: 99
+2026-08-20 00:07:15.594 DEBUG [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Fetching seats for event id: 1
+2026-08-20 00:07:15.599 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Creating event seat for event id: 1 by user id: 1
+2026-08-20 00:07:15.600 DEBUG [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat ownership validation successful. Event id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.601 WARN  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Seat not found in venue id: 1. Seat: A-1
+2026-08-20 00:07:15.608 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Creating event seat for event id: 1 by user id: 1
+2026-08-20 00:07:15.608 DEBUG [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat ownership validation successful. Event id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.609 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat created successfully with id: null for event id: 1
+2026-08-20 00:07:15.617 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Creating event seat for event id: 1 by user id: 1
+2026-08-20 00:07:15.617 DEBUG [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat ownership validation successful. Event id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.618 WARN  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Duplicate event seat assignment. Event id: 1, seat id: 1
+2026-08-20 00:07:15.624 DEBUG [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Fetching seats for event id: 1 with status: AVAILABLE
+2026-08-20 00:07:15.630 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Delete requested for event seat id: 1 by user id: 1
+2026-08-20 00:07:15.631 DEBUG [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat ownership validation successful. Event id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.631 WARN  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat id: 1 cannot be deleted because current status is: RESERVED
+2026-08-20 00:07:15.639 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Price update requested for event seat id: 1 by user id: 1
+2026-08-20 00:07:15.639 DEBUG [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat ownership validation successful. Event id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.640 WARN  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Invalid price update for event seat id: 1. Requested price: 0
+2026-08-20 00:07:15.646 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Delete requested for event seat id: 1 by user id: 50
+2026-08-20 00:07:15.646 DEBUG [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat ownership validation successful. Event id: 1, user id: 50, admin: true
+2026-08-20 00:07:15.646 INFO  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat deleted successfully with id: 1
+2026-08-20 00:07:15.655 DEBUG [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Fetching event seat by id: 99
+2026-08-20 00:07:15.656 WARN  [main] com.lhind.event_booking_api.service.EventSeatServiceImpl - Event seat not found with id: 99
+2026-08-20 00:07:15.814 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Fetching events by status: PUBLISHED
+2026-08-20 00:07:15.819 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Fetching event by id: 1
+2026-08-20 00:07:15.828 INFO  [main] com.lhind.event_booking_api.service.EventServiceImpl - Update requested for event id: 1 by user id: 1
+2026-08-20 00:07:15.828 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Event ownership validation successful. Event id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.833 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Validating event status transition for event id: 1 from PUBLISHED to PUBLISHED
+2026-08-20 00:07:15.834 INFO  [main] com.lhind.event_booking_api.service.EventServiceImpl - Event updated successfully with id: 1
+2026-08-20 00:07:15.840 INFO  [main] com.lhind.event_booking_api.service.EventServiceImpl - Delete requested for event id: 1 by user id: 1
+2026-08-20 00:07:15.841 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Event ownership validation successful. Event id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.841 INFO  [main] com.lhind.event_booking_api.service.EventServiceImpl - Event deleted successfully with id: 1
+2026-08-20 00:07:15.848 INFO  [main] com.lhind.event_booking_api.service.EventServiceImpl - Update requested for event id: 1 by user id: 99
+2026-08-20 00:07:15.848 WARN  [main] com.lhind.event_booking_api.service.EventServiceImpl - Unauthorized event modification attempt. Event id: 1, user id: 99
+2026-08-20 00:07:15.853 INFO  [main] com.lhind.event_booking_api.service.EventServiceImpl - Creating event 'Music Event' by organizer id: 1
+2026-08-20 00:07:15.854 WARN  [main] com.lhind.event_booking_api.service.EventServiceImpl - Event capacity validation failed. Requested seats: 150, venue capacity: 100, venue id: 1
+2026-08-20 00:07:15.860 INFO  [main] com.lhind.event_booking_api.service.EventServiceImpl - Creating event 'Music Event' by organizer id: 1
+2026-08-20 00:07:15.860 WARN  [main] com.lhind.event_booking_api.service.EventServiceImpl - Invalid event dates. Start: 2026-08-25T00:07:15.858788100, End: 2026-08-24T23:07:15.858788100
+2026-08-20 00:07:15.865 INFO  [main] com.lhind.event_booking_api.service.EventServiceImpl - Update requested for event id: 1 by user id: 1
+2026-08-20 00:07:15.867 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Event ownership validation successful. Event id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.867 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Validating event status transition for event id: 1 from DRAFT to PUBLISHED
+2026-08-20 00:07:15.867 INFO  [main] com.lhind.event_booking_api.service.EventServiceImpl - Event updated successfully with id: 1
+2026-08-20 00:07:15.871 INFO  [main] com.lhind.event_booking_api.service.EventServiceImpl - Delete requested for event id: 1 by user id: 99
+2026-08-20 00:07:15.871 WARN  [main] com.lhind.event_booking_api.service.EventServiceImpl - Unauthorized event modification attempt. Event id: 1, user id: 99
+2026-08-20 00:07:15.878 INFO  [main] com.lhind.event_booking_api.service.EventServiceImpl - Update requested for event id: 1 by user id: 1
+2026-08-20 00:07:15.879 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Event ownership validation successful. Event id: 1, user id: 1, admin: false
+2026-08-20 00:07:15.879 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Validating event status transition for event id: 1 from COMPLETED to PUBLISHED
+2026-08-20 00:07:15.879 WARN  [main] com.lhind.event_booking_api.service.EventServiceImpl - Invalid status transition for completed event id: 1
+2026-08-20 00:07:15.884 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Fetching events by category id: 1
+2026-08-20 00:07:15.889 INFO  [main] com.lhind.event_booking_api.service.EventServiceImpl - Creating event 'Music Event' by organizer id: 1
+2026-08-20 00:07:15.889 INFO  [main] com.lhind.event_booking_api.service.EventServiceImpl - Event created successfully with id: 1
+2026-08-20 00:07:15.893 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Fetching all events
+2026-08-20 00:07:15.896 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Fetching events for organizer id: 1
+2026-08-20 00:07:15.900 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Fetching event by id: 99
+2026-08-20 00:07:15.900 WARN  [main] com.lhind.event_booking_api.service.EventServiceImpl - Event not found with id: 99
+2026-08-20 00:07:15.905 DEBUG [main] com.lhind.event_booking_api.service.EventServiceImpl - Fetching events by venue id: 1
+2026-08-20 00:07:16.070 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Delete requested for review id: 1 by user id: 1
+2026-08-20 00:07:16.071 DEBUG [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Review ownership validation successful. Review id: 1, user id: 1, admin: false
+2026-08-20 00:07:16.071 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Review deleted successfully with id: 1
+2026-08-20 00:07:16.075 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Creating review for user id: 1 and event id: 1
+2026-08-20 00:07:16.076 WARN  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Review creation rejected. Event id: 1 has not ended yet
+2026-08-20 00:07:16.081 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Creating review for user id: 1 and event id: 1
+2026-08-20 00:07:16.082 WARN  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Review creation rejected. User id: 1 has no completed booking for event id: 1
+2026-08-20 00:07:16.087 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Creating review for user id: 1 and event id: 1
+2026-08-20 00:07:16.088 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Review created successfully with id: 1
+2026-08-20 00:07:16.094 DEBUG [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Fetching reviews for event id: 1
+2026-08-20 00:07:16.100 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Update requested for review id: 1 by user id: 1
+2026-08-20 00:07:16.101 DEBUG [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Review ownership validation successful. Review id: 1, user id: 1, admin: false
+2026-08-20 00:07:16.101 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Review updated successfully with id: 1
+2026-08-20 00:07:16.107 DEBUG [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Fetching review by id: 99
+2026-08-20 00:07:16.107 WARN  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Review not found with id: 99
+2026-08-20 00:07:16.114 DEBUG [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Fetching reviews for event id: 99
+2026-08-20 00:07:16.114 WARN  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Event not found with id: 99
+2026-08-20 00:07:16.120 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Creating review for user id: 1 and event id: 1
+2026-08-20 00:07:16.121 WARN  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Duplicate review attempt. User id: 1, event id: 1
+2026-08-20 00:07:16.126 DEBUG [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Fetching review by id: 1
+2026-08-20 00:07:16.131 DEBUG [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Fetching reviews for user id: 1
+2026-08-20 00:07:16.137 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Delete requested for review id: 1 by user id: 50
+2026-08-20 00:07:16.137 DEBUG [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Review ownership validation successful. Review id: 1, user id: 50, admin: true
+2026-08-20 00:07:16.138 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Review deleted successfully with id: 1
+2026-08-20 00:07:16.143 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Update requested for review id: 1 by user id: 1
+2026-08-20 00:07:16.144 DEBUG [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Review ownership validation successful. Review id: 1, user id: 1, admin: false
+2026-08-20 00:07:16.144 WARN  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Review id: 1 cannot be moved from event id: 1 to event id: 2
+2026-08-20 00:07:16.150 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Update requested for review id: 1 by user id: 99
+2026-08-20 00:07:16.150 WARN  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Unauthorized review modification attempt. Review id: 1, user id: 99
+2026-08-20 00:07:16.156 INFO  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Delete requested for review id: 1 by user id: 99
+2026-08-20 00:07:16.157 WARN  [main] com.lhind.event_booking_api.service.ReviewServiceImpl - Unauthorized review modification attempt. Review id: 1, user id: 99
+2026-08-20 00:07:16.242 DEBUG [main] com.lhind.event_booking_api.service.SeatServiceImpl - Fetching seats for venue id: 1
+2026-08-20 00:07:16.245 INFO  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Update requested for seat id: 1
+2026-08-20 00:07:16.247 INFO  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Seat updated successfully with id: 1
+2026-08-20 00:07:16.252 INFO  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Update requested for seat id: 1
+2026-08-20 00:07:16.253 WARN  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Seat update rejected. Seat A-2 already exists in venue id: 1
+2026-08-20 00:07:16.259 DEBUG [main] com.lhind.event_booking_api.service.SeatServiceImpl - Fetching seats for venue id: 99
+2026-08-20 00:07:16.259 WARN  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Venue not found with id: 99 while fetching seats
+2026-08-20 00:07:16.262 INFO  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Creating seat A-1 for venue id: 1
+2026-08-20 00:07:16.263 INFO  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Seat created successfully with id: 1
+2026-08-20 00:07:16.268 DEBUG [main] com.lhind.event_booking_api.service.SeatServiceImpl - Fetching seat by id: 99
+2026-08-20 00:07:16.269 WARN  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Seat not found with id: 99
+2026-08-20 00:07:16.274 INFO  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Creating seat A-1 for venue id: 1
+2026-08-20 00:07:16.274 WARN  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Seat creation rejected. Seat A-1 already exists in venue id: 1
+2026-08-20 00:07:16.278 DEBUG [main] com.lhind.event_booking_api.service.SeatServiceImpl - Fetching seat by id: 1
+2026-08-20 00:07:16.282 WARN  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Venue not found with name 'Tirana Arena' and city 'Tirana'
+2026-08-20 00:07:16.286 INFO  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Delete requested for seat id: 1
+2026-08-20 00:07:16.287 INFO  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Seat deleted successfully with id: 1
+2026-08-20 00:07:16.292 DEBUG [main] com.lhind.event_booking_api.service.SeatServiceImpl - Fetching all seats
+2026-08-20 00:07:16.296 INFO  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Delete requested for seat id: 99
+2026-08-20 00:07:16.296 WARN  [main] com.lhind.event_booking_api.service.SeatServiceImpl - Seat not found with id: 99
+2026-08-20 00:07:16.310 INFO  [main] com.lhind.event_booking_api.service.UserServiceImpl - Password change requested for user id: 1
+2026-08-20 00:07:16.310 WARN  [main] com.lhind.event_booking_api.service.UserServiceImpl - Password change rejected for user id: 1 because new password matches current password
+2026-08-20 00:07:16.316 INFO  [main] com.lhind.event_booking_api.service.UserServiceImpl - Delete requested for user id: 1
+2026-08-20 00:07:16.318 INFO  [main] com.lhind.event_booking_api.service.UserServiceImpl - User deleted successfully with id: 1
+2026-08-20 00:07:16.323 INFO  [main] com.lhind.event_booking_api.service.UserServiceImpl - Delete requested for user id: 99
+2026-08-20 00:07:16.324 WARN  [main] com.lhind.event_booking_api.service.UserServiceImpl - User not found with id: 99
+2026-08-20 00:07:16.329 INFO  [main] com.lhind.event_booking_api.service.UserServiceImpl - Profile update requested for user id: 1
+2026-08-20 00:07:16.330 INFO  [main] com.lhind.event_booking_api.service.UserServiceImpl - User profile updated successfully with id: 1
+2026-08-20 00:07:16.336 DEBUG [main] com.lhind.event_booking_api.service.UserServiceImpl - Fetching current user with id: 1
+2026-08-20 00:07:16.340 INFO  [main] com.lhind.event_booking_api.service.UserServiceImpl - Role update requested for user id: 1. New role: ORGANIZER
+2026-08-20 00:07:16.340 INFO  [main] com.lhind.event_booking_api.service.UserServiceImpl - User role updated successfully for user id: 1 to role: ORGANIZER
+2026-08-20 00:07:16.346 INFO  [main] com.lhind.event_booking_api.service.UserServiceImpl - Profile update requested for user id: 1
+2026-08-20 00:07:16.346 WARN  [main] com.lhind.event_booking_api.service.UserServiceImpl - Profile update rejected for user id: 1 because email already exists: existing@test.com
+2026-08-20 00:07:16.352 INFO  [main] com.lhind.event_booking_api.service.UserServiceImpl - Password change requested for user id: 1
+2026-08-20 00:07:16.352 INFO  [main] com.lhind.event_booking_api.service.UserServiceImpl - Password changed successfully for user id: 1
+2026-08-20 00:07:16.357 DEBUG [main] com.lhind.event_booking_api.service.UserServiceImpl - Fetching user by id: 1
+2026-08-20 00:07:16.363 DEBUG [main] com.lhind.event_booking_api.service.UserServiceImpl - Fetching all users
+2026-08-20 00:07:16.368 DEBUG [main] com.lhind.event_booking_api.service.UserServiceImpl - Fetching user by id: 99
+2026-08-20 00:07:16.368 WARN  [main] com.lhind.event_booking_api.service.UserServiceImpl - User not found with id: 99
+2026-08-20 00:07:16.374 INFO  [main] com.lhind.event_booking_api.service.UserServiceImpl - Password change requested for user id: 1
+2026-08-20 00:07:16.375 WARN  [main] com.lhind.event_booking_api.service.UserServiceImpl - Password change rejected for user id: 1 because current password is incorrect
+2026-08-20 00:07:16.380 INFO  [main] com.lhind.event_booking_api.service.UserServiceImpl - Password change requested for user id: 1
+2026-08-20 00:07:16.381 WARN  [main] com.lhind.event_booking_api.service.UserServiceImpl - Password change rejected for user id: 1 because confirmation does not match
+2026-08-20 00:07:16.463 INFO  [main] com.lhind.event_booking_api.service.VenueServiceImpl - Creating venue with name: Tirana Arena in city: Tirana
+2026-08-20 00:07:16.464 INFO  [main] com.lhind.event_booking_api.service.VenueServiceImpl - Venue created successfully with id: 1
+2026-08-20 00:07:16.468 DEBUG [main] com.lhind.event_booking_api.service.VenueServiceImpl - Fetching venue by id: 99
+2026-08-20 00:07:16.470 WARN  [main] com.lhind.event_booking_api.service.VenueServiceImpl - Venue not found with id: 99
+2026-08-20 00:07:16.475 INFO  [main] com.lhind.event_booking_api.service.VenueServiceImpl - Update requested for venue id: 99
+2026-08-20 00:07:16.476 WARN  [main] com.lhind.event_booking_api.service.VenueServiceImpl - Venue not found with id: 99
+2026-08-20 00:07:16.480 INFO  [main] com.lhind.event_booking_api.service.VenueServiceImpl - Delete requested for venue id: 99
+2026-08-20 00:07:16.480 WARN  [main] com.lhind.event_booking_api.service.VenueServiceImpl - Venue not found with id: 99
+2026-08-20 00:07:16.485 INFO  [main] com.lhind.event_booking_api.service.VenueServiceImpl - Update requested for venue id: 1
+2026-08-20 00:07:16.485 INFO  [main] com.lhind.event_booking_api.service.VenueServiceImpl - Venue updated successfully with id: 1
+2026-08-20 00:07:16.490 DEBUG [main] com.lhind.event_booking_api.service.VenueServiceImpl - Fetching venue by id: 1
+2026-08-20 00:07:16.496 INFO  [main] com.lhind.event_booking_api.service.VenueServiceImpl - Delete requested for venue id: 1
+2026-08-20 00:07:16.496 INFO  [main] com.lhind.event_booking_api.service.VenueServiceImpl - Venue deleted successfully with id: 1
+2026-08-20 00:07:16.501 DEBUG [main] com.lhind.event_booking_api.service.VenueServiceImpl - Fetching all venues
+2026-08-20 00:07:16.541 INFO  [SpringApplicationShutdownHook] org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-20 00:07:16.567 INFO  [SpringApplicationShutdownHook] org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-20 00:07:16.580 INFO  [SpringApplicationShutdownHook] org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'

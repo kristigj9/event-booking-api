@@ -10,6 +10,8 @@ import com.lhind.event_booking_api.mapper.UserMapper;
 import com.lhind.event_booking_api.repository.UserRepository;
 import com.lhind.event_booking_api.security.CustomUserDetailsService;
 import com.lhind.event_booking_api.security.JwtService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,6 +28,8 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
     private final JwtService jwtService;
+    private static final Logger log =
+            LogManager.getLogger(AuthServiceImpl.class);
 
     public AuthServiceImpl(
             UserRepository userRepository,

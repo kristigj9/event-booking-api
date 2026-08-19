@@ -5,6 +5,10 @@ import com.lhind.event_booking_api.dto.user.RoleUpdateRequest;
 import com.lhind.event_booking_api.dto.user.UserResponse;
 import com.lhind.event_booking_api.dto.user.UserUpdateRequest;
 import com.lhind.event_booking_api.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +18,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
+@Tag(
+        name = "Users",
+        description = "Endpoints for user profile management and admin user operations"
+)
 public class UserController {
 
     private final UserService userService;
@@ -26,7 +34,20 @@ public class UserController {
 
     // CURRENT USER
 
-    // Merr profilin e user te autentikuar
+    @Operation(
+            summary = "Get current user",
+            description = "Returns the profile of the currently authenticated user"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Current user retrieved successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "User is not authenticated"
+            )
+    })
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getCurrentUser() {
 
@@ -35,7 +56,28 @@ public class UserController {
         );
     }
 
-    // Update profilin e user te autentikuar
+    @Operation(
+            summary = "Update current user",
+            description = "Updates the profile information of the currently authenticated user"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User profile updated successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request data"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "User is not authenticated"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Email already exists"
+            )
+    })
     @PutMapping("/me")
     public ResponseEntity<UserResponse> updateCurrentUser(
             @Valid @RequestBody UserUpdateRequest request
@@ -46,7 +88,24 @@ public class UserController {
         );
     }
 
-    // Ndryshon password e user te autentikuar
+    @Operation(
+            summary = "Change current user password",
+            description = "Changes the password of the currently authenticated user"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Password changed successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid password data"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "User is not authenticated"
+            )
+    })
     @PatchMapping("/me/password")
     public ResponseEntity<Void> changePassword(
             @Valid @RequestBody ChangePasswordRequest request
@@ -59,7 +118,24 @@ public class UserController {
 
     // ADMIN
 
-    // Merr te gjithe users
+    @Operation(
+            summary = "Get all users",
+            description = "Returns all users. Accessible only by ADMIN"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Users retrieved successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "User is not authenticated"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied"
+            )
+    })
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers() {
 
@@ -68,7 +144,28 @@ public class UserController {
         );
     }
 
-    // Merr nje user sipas ID
+    @Operation(
+            summary = "Get user by id",
+            description = "Returns a user by id. Accessible only by ADMIN"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User retrieved successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "User is not authenticated"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found"
+            )
+    })
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(
             @PathVariable Long id
@@ -79,7 +176,28 @@ public class UserController {
         );
     }
 
-    // Fshin nje user
+    @Operation(
+            summary = "Delete user",
+            description = "Deletes a user by id. Accessible only by ADMIN"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "User deleted successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "User is not authenticated"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found"
+            )
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
             @PathVariable Long id
@@ -92,6 +210,32 @@ public class UserController {
                 .build();
     }
 
+    @Operation(
+            summary = "Update user role",
+            description = "Changes the role of a user. Accessible only by ADMIN"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User role updated successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid role data"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "User is not authenticated"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found"
+            )
+    })
     @PatchMapping("/{id}/role")
     public ResponseEntity<UserResponse> updateUserRole(
             @PathVariable Long id,

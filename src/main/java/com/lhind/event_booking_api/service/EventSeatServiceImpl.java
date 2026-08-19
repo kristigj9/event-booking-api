@@ -11,6 +11,8 @@ import com.lhind.event_booking_api.repository.EventRepository;
 import com.lhind.event_booking_api.repository.EventSeatRepository;
 import com.lhind.event_booking_api.repository.SeatRepository;
 import com.lhind.event_booking_api.security.AuthenticatedUserService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,9 @@ import java.util.List;
 
 @Service
 public class EventSeatServiceImpl implements EventSeatService {
+
+    private static final Logger log =
+            LogManager.getLogger(EventSeatServiceImpl.class);
 
     private final EventSeatRepository eventSeatRepository;
     private final EventRepository eventRepository;
@@ -52,6 +57,12 @@ public class EventSeatServiceImpl implements EventSeatService {
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Creating event seat for event id: {} by user id: {}",
+                eventId,
+                currentUser.getId()
+        );
+
         validateOwnership(
                 event,
                 currentUser
@@ -63,11 +74,19 @@ public class EventSeatServiceImpl implements EventSeatService {
                         request.getSeat().getRowNumber(),
                         request.getSeat().getSeatNumber()
                 )
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Seat not found in event venue"
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Seat not found in venue id: {}. Seat: {}-{}",
+                            event.getVenue().getId(),
+                            request.getSeat().getRowNumber(),
+                            request.getSeat().getSeatNumber()
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Seat not found in event venue"
+                    );
+                });
 
         if (eventSeatRepository
                 .findByEventIdAndSeatId(
@@ -75,6 +94,12 @@ public class EventSeatServiceImpl implements EventSeatService {
                         seat.getId()
                 )
                 .isPresent()) {
+
+            log.warn(
+                    "Duplicate event seat assignment. Event id: {}, seat id: {}",
+                    eventId,
+                    seat.getId()
+            );
 
             throw new DuplicateResourceException(
                     "Seat is already assigned to this event"
@@ -92,6 +117,12 @@ public class EventSeatServiceImpl implements EventSeatService {
         EventSeat savedEventSeat =
                 eventSeatRepository.save(eventSeat);
 
+        log.info(
+                "Event seat created successfully with id: {} for event id: {}",
+                savedEventSeat.getId(),
+                eventId
+        );
+
         return eventSeatMapper.toResponse(savedEventSeat);
     }
 
@@ -100,6 +131,11 @@ public class EventSeatServiceImpl implements EventSeatService {
     public EventSeatResponse getEventSeatById(
             Long id
     ) {
+
+        log.debug(
+                "Fetching event seat by id: {}",
+                id
+        );
 
         return eventSeatMapper.toResponse(
                 findEventSeat(id)
@@ -111,6 +147,11 @@ public class EventSeatServiceImpl implements EventSeatService {
     public List<EventSeatResponse> getSeatsByEvent(
             Long eventId
     ) {
+
+        log.debug(
+                "Fetching seats for event id: {}",
+                eventId
+        );
 
         findEvent(eventId);
 
@@ -125,6 +166,12 @@ public class EventSeatServiceImpl implements EventSeatService {
             Long eventId,
             StatusSeat statusSeat
     ) {
+
+        log.debug(
+                "Fetching seats for event id: {} with status: {}",
+                eventId,
+                statusSeat
+        );
 
         findEvent(eventId);
 
@@ -150,6 +197,12 @@ public class EventSeatServiceImpl implements EventSeatService {
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Price update requested for event seat id: {} by user id: {}",
+                eventSeatId,
+                currentUser.getId()
+        );
+
         validateOwnership(
                 eventSeat.getEvent(),
                 currentUser
@@ -158,6 +211,12 @@ public class EventSeatServiceImpl implements EventSeatService {
         if (priceSeat == null
                 || priceSeat.compareTo(BigDecimal.ZERO) <= 0) {
 
+            log.warn(
+                    "Invalid price update for event seat id: {}. Requested price: {}",
+                    eventSeatId,
+                    priceSeat
+            );
+
             throw new InvalidOperationException(
                     "Seat price must be greater than 0"
             );
@@ -165,8 +224,17 @@ public class EventSeatServiceImpl implements EventSeatService {
 
         eventSeat.setPriceSeat(priceSeat);
 
+        EventSeat updatedEventSeat =
+                eventSeatRepository.save(eventSeat);
+
+        log.info(
+                "Event seat price updated successfully. Event seat id: {}, new price: {}",
+                eventSeatId,
+                priceSeat
+        );
+
         return eventSeatMapper.toResponse(
-                eventSeatRepository.save(eventSeat)
+                updatedEventSeat
         );
     }
 
@@ -182,17 +250,25 @@ public class EventSeatServiceImpl implements EventSeatService {
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Delete requested for event seat id: {} by user id: {}",
+                eventSeatId,
+                currentUser.getId()
+        );
+
         validateOwnership(
                 eventSeat.getEvent(),
                 currentUser
         );
 
-        /*
-         * Nuk lejojmë fshirjen e një seat-i
-         * që është RESERVED ose SOLD.
-         */
         if (eventSeat.getStatusSeat()
                 != StatusSeat.AVAILABLE) {
+
+            log.warn(
+                    "Event seat id: {} cannot be deleted because current status is: {}",
+                    eventSeatId,
+                    eventSeat.getStatusSeat()
+            );
 
             throw new InvalidOperationException(
                     "Only available event seats can be deleted"
@@ -200,6 +276,11 @@ public class EventSeatServiceImpl implements EventSeatService {
         }
 
         eventSeatRepository.delete(eventSeat);
+
+        log.info(
+                "Event seat deleted successfully with id: {}",
+                eventSeatId
+        );
     }
 
     // -----------------------------
@@ -211,12 +292,18 @@ public class EventSeatServiceImpl implements EventSeatService {
     ) {
 
         return eventRepository.findById(eventId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Event not found with id: "
-                                        + eventId
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Event not found with id: {}",
+                            eventId
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Event not found with id: "
+                                    + eventId
+                    );
+                });
     }
 
     private EventSeat findEventSeat(
@@ -224,12 +311,18 @@ public class EventSeatServiceImpl implements EventSeatService {
     ) {
 
         return eventSeatRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Event seat not found with id: "
-                                        + id
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Event seat not found with id: {}",
+                            id
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Event seat not found with id: "
+                                    + id
+                    );
+                });
     }
 
     private void validateOwnership(
@@ -247,9 +340,22 @@ public class EventSeatServiceImpl implements EventSeatService {
 
         if (!isAdmin && !isOwner) {
 
+            log.warn(
+                    "Unauthorized event seat modification attempt. Event id: {}, user id: {}",
+                    event.getId(),
+                    currentUser.getId()
+            );
+
             throw new InvalidOperationException(
                     "You are not allowed to modify seats for this event"
             );
         }
+
+        log.debug(
+                "Event seat ownership validation successful. Event id: {}, user id: {}, admin: {}",
+                event.getId(),
+                currentUser.getId(),
+                isAdmin
+        );
     }
 }

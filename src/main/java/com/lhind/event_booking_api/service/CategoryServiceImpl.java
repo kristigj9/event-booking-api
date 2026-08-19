@@ -7,6 +7,8 @@ import com.lhind.event_booking_api.exception.DuplicateResourceException;
 import com.lhind.event_booking_api.exception.ResourceNotFoundException;
 import com.lhind.event_booking_api.mapper.CategoryMapper;
 import com.lhind.event_booking_api.repository.CategoryRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +16,9 @@ import java.util.List;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
+
+    private static final Logger log =
+            LogManager.getLogger(CategoryServiceImpl.class);
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
@@ -29,21 +34,41 @@ public class CategoryServiceImpl implements CategoryService {
     // CREATE
     @Override
     @Transactional
-    public CategoryResponse createCategory(CategoryRequest request) {
+    public CategoryResponse createCategory(
+            CategoryRequest request
+    ) {
+
+        log.info(
+                "Creating category with name: {}",
+                request.getNameCategory()
+        );
 
         if (categoryRepository.existsByNameCategory(
-                request.getNameCategory())) {
+                request.getNameCategory()
+        )) {
 
-            throw new DuplicateResourceException( //Perodrimi i wxceptional per te mos lejuar 2 here nje kategori
+            log.warn(
+                    "Category creation rejected because category already exists with name: {}",
+                    request.getNameCategory()
+            );
+
+            throw new DuplicateResourceException(
                     "Category already exists with name: "
                             + request.getNameCategory()
             );
         }
 
-        Category category = categoryMapper.toEntity(request);
+        Category category =
+                categoryMapper.toEntity(request);
 
         Category savedCategory =
                 categoryRepository.save(category);
+
+        log.info(
+                "Category created successfully with id: {} and name: {}",
+                savedCategory.getId(),
+                savedCategory.getNameCategory()
+        );
 
         return categoryMapper.toResponse(savedCategory);
     }
@@ -51,14 +76,17 @@ public class CategoryServiceImpl implements CategoryService {
     // GET BY ID
     @Override
     @Transactional(readOnly = true)
-    public CategoryResponse getCategoryById(Long id) {
+    public CategoryResponse getCategoryById(
+            Long id
+    ) {
 
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Category not found with id: " + id
-                        )
-                );
+        log.debug(
+                "Fetching category by id: {}",
+                id
+        );
+
+        Category category =
+                findCategory(id);
 
         return categoryMapper.toResponse(category);
     }
@@ -67,6 +95,10 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional(readOnly = true)
     public List<CategoryResponse> getAllCategories() {
+
+        log.debug(
+                "Fetching all categories"
+        );
 
         List<Category> categories =
                 categoryRepository.findAll();
@@ -82,19 +114,25 @@ public class CategoryServiceImpl implements CategoryService {
             CategoryRequest request
     ) {
 
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Category not found with id: " + id//Kontrollojm nese gjendet
-                                // ne databaze Kategoria qe duam te ndyshojme sipas id
-                        )
-                );
+        log.info(
+                "Update requested for category id: {}",
+                id
+        );
 
-        // Kontrollojme nese kategoria qe duam te ndryshojme ka te njejtin emer me ndonje kategori qe ekziston ne database
+        Category category =
+                findCategory(id);
+
+        // Kontrollojme duplicate name vetem nese emri ndryshon
         if (!category.getNameCategory()
                 .equals(request.getNameCategory())
                 && categoryRepository.existsByNameCategory(
-                request.getNameCategory())) {
+                request.getNameCategory()
+        )) {
+
+            log.warn(
+                    "Category update rejected. Category name already exists: {}",
+                    request.getNameCategory()
+            );
 
             throw new DuplicateResourceException(
                     "Category already exists with name: "
@@ -102,10 +140,18 @@ public class CategoryServiceImpl implements CategoryService {
             );
         }
 
-        categoryMapper.updateEntity(request, category);
+        categoryMapper.updateEntity(
+                request,
+                category
+        );
 
         Category updatedCategory =
                 categoryRepository.save(category);
+
+        log.info(
+                "Category updated successfully with id: {}",
+                updatedCategory.getId()
+        );
 
         return categoryMapper.toResponse(updatedCategory);
     }
@@ -113,15 +159,45 @@ public class CategoryServiceImpl implements CategoryService {
     // DELETE
     @Override
     @Transactional
-    public void deleteCategory(Long id) {
+    public void deleteCategory(
+            Long id
+    ) {
 
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Category not found with id: " + id//Kontrollojm nese kategoria gjendet apo jo ne database
-                        )
-                );
+        log.info(
+                "Delete requested for category id: {}",
+                id
+        );
+
+        Category category =
+                findCategory(id);
 
         categoryRepository.delete(category);
+
+        log.info(
+                "Category deleted successfully with id: {}",
+                id
+        );
+    }
+
+    // -----------------------------
+    // PRIVATE HELPER METHOD
+    // -----------------------------
+
+    private Category findCategory(
+            Long id
+    ) {
+
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Category not found with id: {}",
+                            id
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Category not found with id: " + id
+                    );
+                });
     }
 }

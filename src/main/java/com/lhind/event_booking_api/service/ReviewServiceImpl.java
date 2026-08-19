@@ -2,6 +2,7 @@ package com.lhind.event_booking_api.service;
 
 import com.lhind.event_booking_api.dto.review.ReviewRequest;
 import com.lhind.event_booking_api.dto.review.ReviewResponse;
+import com.lhind.event_booking_api.entity.BookingStatus;
 import com.lhind.event_booking_api.entity.Event;
 import com.lhind.event_booking_api.entity.Review;
 import com.lhind.event_booking_api.entity.Role;
@@ -11,20 +12,24 @@ import com.lhind.event_booking_api.exception.InvalidOperationException;
 import com.lhind.event_booking_api.exception.ResourceNotFoundException;
 import com.lhind.event_booking_api.mapper.ReviewMapper;
 import com.lhind.event_booking_api.repository.BookingRepository;
-import com.lhind.event_booking_api.entity.BookingStatus;
 import com.lhind.event_booking_api.repository.EventRepository;
 import com.lhind.event_booking_api.repository.ReviewRepository;
 import com.lhind.event_booking_api.security.AuthenticatedUserService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class ReviewServiceImpl implements ReviewService {
-    private final BookingRepository bookingRepository;
 
+    private static final Logger log =
+            LogManager.getLogger(ReviewServiceImpl.class);
+
+    private final BookingRepository bookingRepository;
     private final ReviewRepository reviewRepository;
     private final EventRepository eventRepository;
     private final ReviewMapper reviewMapper;
@@ -54,19 +59,28 @@ public class ReviewServiceImpl implements ReviewService {
         User user =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Creating review for user id: {} and event id: {}",
+                user.getId(),
+                request.getEventId()
+        );
+
         Event event =
                 findEvent(request.getEventId());
 
-        // Eventi duhet të ketë përfunduar
         if (event.getEventEndDateTime()
                 .isAfter(LocalDateTime.now())) {
+
+            log.warn(
+                    "Review creation rejected. Event id: {} has not ended yet",
+                    event.getId()
+            );
 
             throw new InvalidOperationException(
                     "Review can only be created after the event has ended"
             );
         }
 
-        // User-i duhet të ketë një booking COMPLETED
         boolean hasCompletedBooking =
                 bookingRepository
                         .existsByUserIdAndEventIdAndBookingStatus(
@@ -77,16 +91,27 @@ public class ReviewServiceImpl implements ReviewService {
 
         if (!hasCompletedBooking) {
 
+            log.warn(
+                    "Review creation rejected. User id: {} has no completed booking for event id: {}",
+                    user.getId(),
+                    event.getId()
+            );
+
             throw new InvalidOperationException(
                     "You can review only events you have attended"
             );
         }
 
-        // Vetëm një review për user + event
         if (reviewRepository.existsByUserIdAndEventId(
                 user.getId(),
                 event.getId()
         )) {
+
+            log.warn(
+                    "Duplicate review attempt. User id: {}, event id: {}",
+                    user.getId(),
+                    event.getId()
+            );
 
             throw new DuplicateResourceException(
                     "User has already reviewed this event"
@@ -103,6 +128,11 @@ public class ReviewServiceImpl implements ReviewService {
         Review savedReview =
                 reviewRepository.save(review);
 
+        log.info(
+                "Review created successfully with id: {}",
+                savedReview.getId()
+        );
+
         return reviewMapper.toResponse(savedReview);
     }
 
@@ -112,6 +142,11 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewResponse getReviewById(
             Long reviewId
     ) {
+
+        log.debug(
+                "Fetching review by id: {}",
+                reviewId
+        );
 
         Review review =
                 findReview(reviewId);
@@ -125,6 +160,11 @@ public class ReviewServiceImpl implements ReviewService {
     public List<ReviewResponse> getReviewsByEvent(
             Long eventId
     ) {
+
+        log.debug(
+                "Fetching reviews for event id: {}",
+                eventId
+        );
 
         findEvent(eventId);
 
@@ -140,6 +180,11 @@ public class ReviewServiceImpl implements ReviewService {
 
         User currentUser =
                 authenticatedUserService.getCurrentUser();
+
+        log.debug(
+                "Fetching reviews for user id: {}",
+                currentUser.getId()
+        );
 
         return reviewMapper.toResponseList(
                 reviewRepository.findByUserId(
@@ -162,18 +207,27 @@ public class ReviewServiceImpl implements ReviewService {
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Update requested for review id: {} by user id: {}",
+                reviewId,
+                currentUser.getId()
+        );
+
         validateOwnership(
                 review,
                 currentUser
         );
 
-        /*
-         * Nuk lejojmë që një Review të transferohet
-         * nga një Event te një Event tjetër.
-         */
         if (!review.getEvent()
                 .getId()
                 .equals(request.getEventId())) {
+
+            log.warn(
+                    "Review id: {} cannot be moved from event id: {} to event id: {}",
+                    reviewId,
+                    review.getEvent().getId(),
+                    request.getEventId()
+            );
 
             throw new InvalidOperationException(
                     "Review cannot be moved to another event"
@@ -187,6 +241,11 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review updatedReview =
                 reviewRepository.save(review);
+
+        log.info(
+                "Review updated successfully with id: {}",
+                updatedReview.getId()
+        );
 
         return reviewMapper.toResponse(updatedReview);
     }
@@ -204,12 +263,23 @@ public class ReviewServiceImpl implements ReviewService {
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Delete requested for review id: {} by user id: {}",
+                reviewId,
+                currentUser.getId()
+        );
+
         validateOwnership(
                 review,
                 currentUser
         );
 
         reviewRepository.delete(review);
+
+        log.info(
+                "Review deleted successfully with id: {}",
+                reviewId
+        );
     }
 
     // ----------------------------
@@ -221,12 +291,18 @@ public class ReviewServiceImpl implements ReviewService {
     ) {
 
         return reviewRepository.findById(reviewId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Review not found with id: "
-                                        + reviewId
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Review not found with id: {}",
+                            reviewId
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Review not found with id: "
+                                    + reviewId
+                    );
+                });
     }
 
     private Event findEvent(
@@ -234,12 +310,18 @@ public class ReviewServiceImpl implements ReviewService {
     ) {
 
         return eventRepository.findById(eventId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Event not found with id: "
-                                        + eventId
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Event not found with id: {}",
+                            eventId
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Event not found with id: "
+                                    + eventId
+                    );
+                });
     }
 
     private void validateOwnership(
@@ -257,9 +339,22 @@ public class ReviewServiceImpl implements ReviewService {
 
         if (!isAdmin && !isOwner) {
 
+            log.warn(
+                    "Unauthorized review modification attempt. Review id: {}, user id: {}",
+                    review.getId(),
+                    currentUser.getId()
+            );
+
             throw new InvalidOperationException(
                     "You are not allowed to modify this review"
             );
         }
+
+        log.debug(
+                "Review ownership validation successful. Review id: {}, user id: {}, admin: {}",
+                review.getId(),
+                currentUser.getId(),
+                isAdmin
+        );
     }
 }

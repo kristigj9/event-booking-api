@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+
+    <Properties>
+        <Property name="LOG_PATH">logs</Property>
+        <Property name="LOG_FILE">event-booking-api.log</Property>
+
+        <Property name="LOG_PATTERN">
+            %d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n
+        </Property>
+    </Properties>
+
+    <Appenders>
+
+        <!-- Console logging -->
+        <Console name="Console"
+                 target="SYSTEM_OUT">
+
+            <PatternLayout
+                    pattern="${LOG_PATTERN}"/>
+
+        </Console>
+
+        <!-- Rolling file logging -->
+        <RollingFile
+                name="RollingFile"
+                fileName="${LOG_PATH}/${LOG_FILE}"
+                filePattern="${LOG_PATH}/archive/event-booking-api-%d{yyyy-MM-dd}-%i.log.gz">
+
+            <PatternLayout
+                    pattern="${LOG_PATTERN}"/>
+
+            <Policies>
+
+                <!-- Krijon file te ri cdo dite -->
+                <TimeBasedTriggeringPolicy
+                        interval="1"
+                        modulate="true"/>
+
+                <!-- Krijon file te ri kur arrin 10 MB -->
+                <SizeBasedTriggeringPolicy
+                        size="10 MB"/>
+
+            </Policies>
+
+            <DefaultRolloverStrategy
+                    max="30"/>
+
+        </RollingFile>
+
+    </Appenders>
+
+    <Loggers>
+
+        <!-- Package i aplikacionit tone -->
+        <Logger
+                name="com.lhind.event_booking_api"
+                level="DEBUG"
+                additivity="false">
+
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+
+        </Logger>
+
+        <!-- Hibernate SQL -->
+        <Logger
+                name="org.hibernate.SQL"
+                level="INFO"
+                additivity="false">
+
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+
+        </Logger>
+
+        <!-- Spring -->
+        <Logger
+                name="org.springframework"
+                level="INFO"/>
+
+        <!-- Root logger -->
+        <Root level="INFO">
+
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+
+        </Root>
+
+    </Loggers>
+
+</Configuration>
