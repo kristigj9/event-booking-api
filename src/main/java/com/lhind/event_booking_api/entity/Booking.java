@@ -52,5 +52,13 @@ public class Booking {
     )
     @Builder.Default
     private List<BookingSeat> bookingSeats = new ArrayList<>();
+    //Lidhja e Booking me Payment
+
+    @OneToOne(
+            mappedBy = "booking",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Payment payment;
 
 }

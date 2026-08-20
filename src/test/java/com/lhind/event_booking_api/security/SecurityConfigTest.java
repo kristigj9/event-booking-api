@@ -1,5 +1,14 @@
 package com.lhind.event_booking_api.security;
 
+import com.lhind.event_booking_api.dto.payment.PaymentRequest;
+import com.lhind.event_booking_api.dto.payment.PaymentResponse;
+import com.lhind.event_booking_api.entity.PaymentMethod;
+import com.lhind.event_booking_api.entity.PaymentStatus;
+import com.lhind.event_booking_api.service.PaymentService;
+import java.math.BigDecimal;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import com.lhind.event_booking_api.service.EventService;
 import com.lhind.event_booking_api.service.ReviewService;
 import com.lhind.event_booking_api.service.VenueService;
@@ -10,6 +19,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.List;
 
@@ -31,9 +42,10 @@ class SecurityConfigTest {
 
     @MockitoBean
     private VenueService venueService;
-
     @MockitoBean
     private ReviewService reviewService;
+    @MockitoBean
+    private PaymentService paymentService;
     @Test
     void getEvents_shouldBePublic() throws Exception {
 
@@ -359,5 +371,135 @@ class SecurityConfigTest {
                 .andExpect(
                         status().isBadRequest()
                 );
+    }
+
+    // --------------------------------
+// PAYMENTS
+// --------------------------------
+
+    @Test
+    void createPayment_withoutAuthentication_shouldBeForbidden()
+            throws Exception {
+
+        mockMvc.perform(
+                        post("/api/payments/booking/1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                              "paymentMethod": "CARD"
+                            }
+                            """)
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void createPayment_authenticatedUser_shouldBeAllowed()
+            throws Exception {
+
+        when(paymentService.createPayment(
+                eq(1L),
+                any(PaymentRequest.class)
+        )).thenReturn(
+                PaymentResponse.builder()
+                        .id(1L)
+                        .amount(new BigDecimal("25.00"))
+                        .paymentMethod(PaymentMethod.CARD)
+                        .paymentStatus(PaymentStatus.PENDING)
+                        .build()
+        );
+
+        mockMvc.perform(
+                        post("/api/payments/booking/1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                              "paymentMethod": "CARD"
+                            }
+                            """)
+                )
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void getPayment_withoutAuthentication_shouldBeForbidden()
+            throws Exception {
+
+        mockMvc.perform(
+                        get("/api/payments/1")
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void getPayment_authenticatedUser_shouldBeAllowed()
+            throws Exception {
+
+        when(paymentService.getPaymentById(1L))
+                .thenReturn(
+                        PaymentResponse.builder()
+                                .id(1L)
+                                .amount(new BigDecimal("25.00"))
+                                .paymentMethod(PaymentMethod.CARD)
+                                .paymentStatus(PaymentStatus.PENDING)
+                                .build()
+                );
+
+        mockMvc.perform(
+                        get("/api/payments/1")
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void completePayment_authenticatedUser_shouldBeAllowed()
+            throws Exception {
+
+        when(paymentService.completePayment(1L))
+                .thenReturn(
+                        PaymentResponse.builder()
+                                .id(1L)
+                                .paymentStatus(PaymentStatus.COMPLETED)
+                                .build()
+                );
+
+        mockMvc.perform(
+                        patch("/api/payments/1/complete")
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "admin@test.com",
+            roles = "ADMIN"
+    )
+    void refundPayment_adminShouldBeAllowed()
+            throws Exception {
+
+        when(paymentService.refundPayment(1L))
+                .thenReturn(
+                        PaymentResponse.builder()
+                                .id(1L)
+                                .paymentStatus(PaymentStatus.REFUNDED)
+                                .build()
+                );
+
+        mockMvc.perform(
+                        patch("/api/payments/1/refund")
+                )
+                .andExpect(status().isOk());
     }
 }

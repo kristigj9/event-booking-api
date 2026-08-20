@@ -343,6 +343,38 @@ public class SecurityConfig {
                                 "/api/bookings/*"
                         ).authenticated()
 
+                                // PAYMENTS
+                                // USER owner / ADMIN
+                        // Krijon payment per booking
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/payments/booking/*"
+                                ).authenticated()
+                                // USER owner / ADMIN
+                                // Merr payment sipas booking
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/payments/booking/*"
+                                ).authenticated()
+                                // USER owner / ADMIN
+                                // Merr payment sipas ID
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/payments/*"
+                                ).authenticated()
+                                // USER owner / ADMIN
+                                // Perfundon payment
+                                .requestMatchers(
+                                        HttpMethod.PATCH,
+                                        "/api/payments/*/complete"
+                                ).authenticated()
+
+                                // USER owner / ADMIN
+                                // Refund payment
+                                .requestMatchers(
+                                        HttpMethod.PATCH,
+                                        "/api/payments/*/refund"
+                                ).authenticated()
 
                         // REVIEWS
 
