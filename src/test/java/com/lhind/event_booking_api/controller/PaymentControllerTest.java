@@ -1,7 +1,7 @@
 package com.lhind.event_booking_api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lhind.event_booking_api.dto.booking.BookingResponseShort;
+import com.lhind.event_booking_api.dto.reference.BookingResponseShort;
 import com.lhind.event_booking_api.dto.payment.PaymentRequest;
 import com.lhind.event_booking_api.dto.payment.PaymentResponse;
 import com.lhind.event_booking_api.entity.BookingStatus;

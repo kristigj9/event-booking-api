@@ -30,6 +30,7 @@ public class BookingServiceImpl implements BookingService {
     private final EventSeatRepository eventSeatRepository;
     private final BookingMapper bookingMapper;
     private final AuthenticatedUserService authenticatedUserService;
+    private final NotificationService notificationService;
 
     public BookingServiceImpl(
             BookingRepository bookingRepository,
@@ -37,7 +38,8 @@ public class BookingServiceImpl implements BookingService {
             SeatRepository seatRepository,
             EventSeatRepository eventSeatRepository,
             BookingMapper bookingMapper,
-            AuthenticatedUserService authenticatedUserService
+            AuthenticatedUserService authenticatedUserService,
+            NotificationService notificationService
     ) {
         this.bookingRepository = bookingRepository;
         this.eventRepository = eventRepository;
@@ -45,6 +47,7 @@ public class BookingServiceImpl implements BookingService {
         this.eventSeatRepository = eventSeatRepository;
         this.bookingMapper = bookingMapper;
         this.authenticatedUserService = authenticatedUserService;
+        this.notificationService = notificationService;
     }
 
     // CREATE BOOKING
@@ -81,7 +84,9 @@ public class BookingServiceImpl implements BookingService {
             );
         }
 
-        validateDuplicateSeats(request.getSeats());
+        validateDuplicateSeats(
+                request.getSeats()
+        );
 
         Booking booking =
                 bookingMapper.toEntity(
@@ -159,8 +164,11 @@ public class BookingServiceImpl implements BookingService {
                 user.getId()
         );
 
-        return bookingMapper.toResponse(savedBooking);
+        return bookingMapper.toResponse(
+                savedBooking
+        );
     }
+
 
     // GET BY ID
     @Override
@@ -185,8 +193,11 @@ public class BookingServiceImpl implements BookingService {
                 currentUser
         );
 
-        return bookingMapper.toResponse(booking);
+        return bookingMapper.toResponse(
+                booking
+        );
     }
+
 
     // GET BOOKINGS OF CURRENT USER
     @Override
@@ -207,6 +218,7 @@ public class BookingServiceImpl implements BookingService {
                 )
         );
     }
+
 
     // GET BOOKINGS BY EVENT
     @Override
@@ -233,9 +245,12 @@ public class BookingServiceImpl implements BookingService {
         );
 
         return bookingMapper.toResponseList(
-                bookingRepository.findByEventId(eventId)
+                bookingRepository.findByEventId(
+                        eventId
+                )
         );
     }
+
 
     // GET CURRENT USER BOOKINGS BY STATUS
     @Override
@@ -261,6 +276,7 @@ public class BookingServiceImpl implements BookingService {
                         )
         );
     }
+
 
     // CONFIRM
     @Override
@@ -338,8 +354,23 @@ public class BookingServiceImpl implements BookingService {
                 savedBooking.getId()
         );
 
-        return bookingMapper.toResponse(savedBooking);
+        // Krijon notification per user-in e booking
+        notificationService.createNotification(
+                savedBooking.getUser(),
+                savedBooking.getEvent(),
+                savedBooking,
+                NotificationType.BOOKING_CONFIRMED,
+                "Your booking for event "
+                        + savedBooking.getEvent()
+                        .getEventName()
+                        + " has been confirmed"
+        );
+
+        return bookingMapper.toResponse(
+                savedBooking
+        );
     }
+
 
     // CANCEL
     @Override
@@ -436,8 +467,23 @@ public class BookingServiceImpl implements BookingService {
                 savedBooking.getId()
         );
 
-        return bookingMapper.toResponse(savedBooking);
+        // Krijon notification per user-in e booking
+        notificationService.createNotification(
+                savedBooking.getUser(),
+                savedBooking.getEvent(),
+                savedBooking,
+                NotificationType.BOOKING_CANCELLED,
+                "Your booking for event "
+                        + savedBooking.getEvent()
+                        .getEventName()
+                        + " has been cancelled"
+        );
+
+        return bookingMapper.toResponse(
+                savedBooking
+        );
     }
+
 
     // COMPLETE
     @Override
@@ -489,8 +535,23 @@ public class BookingServiceImpl implements BookingService {
                 savedBooking.getId()
         );
 
-        return bookingMapper.toResponse(savedBooking);
+        // Krijon notification per user-in e booking
+        notificationService.createNotification(
+                savedBooking.getUser(),
+                savedBooking.getEvent(),
+                savedBooking,
+                NotificationType.BOOKING_COMPLETED,
+                "Your booking for event "
+                        + savedBooking.getEvent()
+                        .getEventName()
+                        + " has been completed"
+        );
+
+        return bookingMapper.toResponse(
+                savedBooking
+        );
     }
+
 
     // --------------------------------
     // PRIVATE HELPER METHODS
@@ -500,7 +561,8 @@ public class BookingServiceImpl implements BookingService {
             Long bookingId
     ) {
 
-        return bookingRepository.findById(bookingId)
+        return bookingRepository
+                .findById(bookingId)
                 .orElseThrow(() -> {
 
                     log.warn(
@@ -515,11 +577,13 @@ public class BookingServiceImpl implements BookingService {
                 });
     }
 
+
     private Event findEvent(
             Long eventId
     ) {
 
-        return eventRepository.findById(eventId)
+        return eventRepository
+                .findById(eventId)
                 .orElseThrow(() -> {
 
                     log.warn(
@@ -533,6 +597,7 @@ public class BookingServiceImpl implements BookingService {
                     );
                 });
     }
+
 
     private Seat findSeat(
             Event event,
@@ -563,6 +628,7 @@ public class BookingServiceImpl implements BookingService {
                 });
     }
 
+
     private EventSeat findEventSeat(
             Long eventId,
             Long seatId
@@ -587,18 +653,22 @@ public class BookingServiceImpl implements BookingService {
                 });
     }
 
+
     private void validateOwnership(
             Booking booking,
             User currentUser
     ) {
 
         boolean isAdmin =
-                currentUser.getRole() == Role.ADMIN;
+                currentUser.getRole()
+                        == Role.ADMIN;
 
         boolean isOwner =
                 booking.getUser()
                         .getId()
-                        .equals(currentUser.getId());
+                        .equals(
+                                currentUser.getId()
+                        );
 
         if (!isAdmin && !isOwner) {
 
@@ -621,18 +691,22 @@ public class BookingServiceImpl implements BookingService {
         );
     }
 
+
     private void validateEventOwnership(
             Event event,
             User currentUser
     ) {
 
         boolean isAdmin =
-                currentUser.getRole() == Role.ADMIN;
+                currentUser.getRole()
+                        == Role.ADMIN;
 
         boolean isOrganizer =
                 event.getOrganizer()
                         .getId()
-                        .equals(currentUser.getId());
+                        .equals(
+                                currentUser.getId()
+                        );
 
         if (!isAdmin && !isOrganizer) {
 
@@ -654,6 +728,7 @@ public class BookingServiceImpl implements BookingService {
                 isAdmin
         );
     }
+
 
     private void validateDuplicateSeats(
             List<SeatSelectionRequest> seats

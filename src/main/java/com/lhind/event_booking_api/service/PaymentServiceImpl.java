@@ -25,6 +25,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final BookingRepository bookingRepository;
     private final PaymentMapper paymentMapper;
     private final AuthenticatedUserService authenticatedUserService;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -186,6 +187,16 @@ public class PaymentServiceImpl implements PaymentService {
         Payment savedPayment =
                 paymentRepository.save(payment);
 
+        notificationService.createNotification(
+                savedPayment.getBooking().getUser(),
+                savedPayment.getBooking().getEvent(),
+                savedPayment.getBooking(),
+                NotificationType.PAYMENT_COMPLETED,
+                "Payment for booking "
+                        + savedPayment.getBooking().getId()
+                        + " has been completed"
+        );
+
         return paymentMapper.toResponse(
                 savedPayment
         );
@@ -209,6 +220,14 @@ public class PaymentServiceImpl implements PaymentService {
         );
 
         if (payment.getPaymentStatus()
+                == PaymentStatus.REFUNDED) {
+
+            throw new InvalidOperationException(
+                    "Payment is already refunded"
+            );
+        }
+
+        if (payment.getPaymentStatus()
                 != PaymentStatus.COMPLETED) {
 
             throw new InvalidOperationException(
@@ -222,6 +241,16 @@ public class PaymentServiceImpl implements PaymentService {
 
         Payment savedPayment =
                 paymentRepository.save(payment);
+
+        notificationService.createNotification(
+                savedPayment.getBooking().getUser(),
+                savedPayment.getBooking().getEvent(),
+                savedPayment.getBooking(),
+                NotificationType.PAYMENT_REFUNDED,
+                "Payment for booking "
+                        + savedPayment.getBooking().getId()
+                        + " has been refunded"
+        );
 
         return paymentMapper.toResponse(
                 savedPayment

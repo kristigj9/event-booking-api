@@ -60,5 +60,9 @@ public class Booking {
             orphanRemoval = true
     )
     private Payment payment;
-
+//Nje Booking disa Notification
+@OneToMany(mappedBy = "booking")
+@Builder.Default
+private List<Notification> notifications =
+            new ArrayList<>();
 }

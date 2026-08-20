@@ -46,4 +46,23 @@ public class User {
     @OneToMany(mappedBy = "organizer")
     @Builder.Default
     private List<Event> organizedEvents = new ArrayList<>();
+
+    // Lidhja e User me Waitlist
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<Waitlist> waitlists = new ArrayList<>();
+//Lidhja nje User disa Notification
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<Notification> notifications = new ArrayList<>();
+
+
 }

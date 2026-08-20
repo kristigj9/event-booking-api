@@ -1,17 +1,21 @@
 package com.lhind.event_booking_api.security;
 
+import com.lhind.event_booking_api.dto.notification.NotificationResponse;
 import com.lhind.event_booking_api.dto.payment.PaymentRequest;
 import com.lhind.event_booking_api.dto.payment.PaymentResponse;
+import com.lhind.event_booking_api.dto.waitlist.WaitlistRequest;
+import com.lhind.event_booking_api.dto.waitlist.WaitlistResponse;
+import com.lhind.event_booking_api.entity.NotificationStatus;
 import com.lhind.event_booking_api.entity.PaymentMethod;
 import com.lhind.event_booking_api.entity.PaymentStatus;
-import com.lhind.event_booking_api.service.PaymentService;
+import com.lhind.event_booking_api.entity.WaitlistStatus;
+import com.lhind.event_booking_api.service.*;
+
 import java.math.BigDecimal;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import com.lhind.event_booking_api.service.EventService;
-import com.lhind.event_booking_api.service.ReviewService;
-import com.lhind.event_booking_api.service.VenueService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,10 +25,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-
 import java.util.List;
-
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -46,6 +47,12 @@ class SecurityConfigTest {
     private ReviewService reviewService;
     @MockitoBean
     private PaymentService paymentService;
+    @MockitoBean
+    private WaitlistService waitlistService;
+    @MockitoBean
+    private NotificationService notificationService;
+
+
     @Test
     void getEvents_shouldBePublic() throws Exception {
 
@@ -501,5 +508,340 @@ class SecurityConfigTest {
                         patch("/api/payments/1/refund")
                 )
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void joinWaitlist_withoutAuthentication_shouldBeForbidden()
+            throws Exception {
+
+        mockMvc.perform(
+                        post("/api/waitlists/event/10")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                              "requestedSeats": 2
+                            }
+                            """)
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void joinWaitlist_authenticatedUser_shouldBeAllowed()
+            throws Exception {
+
+        WaitlistResponse response =
+                WaitlistResponse.builder()
+                        .id(1L)
+                        .requestedSeats(2)
+                        .status(WaitlistStatus.WAITING)
+                        .build();
+
+        when(
+                waitlistService.joinWaitlist(
+                        eq(10L),
+                        any(WaitlistRequest.class)
+                )
+        ).thenReturn(response);
+
+        mockMvc.perform(
+                        post("/api/waitlists/event/10")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                              "requestedSeats": 2
+                            }
+                            """)
+                )
+                .andExpect(status().isCreated());
+    }
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void getMyWaitlists_authenticatedUser_shouldBeAllowed()
+            throws Exception {
+
+        when(waitlistService.getMyWaitlists())
+                .thenReturn(List.of());
+
+        mockMvc.perform(
+                        get("/api/waitlists/my")
+                )
+                .andExpect(status().isOk());
+    }
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void getWaitlistById_authenticatedUser_shouldBeAllowed()
+            throws Exception {
+
+        when(waitlistService.getWaitlistById(1L))
+                .thenReturn(
+                        WaitlistResponse.builder()
+                                .id(1L)
+                                .status(WaitlistStatus.WAITING)
+                                .build()
+                );
+
+        mockMvc.perform(
+                        get("/api/waitlists/1")
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void getEventWaitlist_userRole_shouldBeForbidden()
+            throws Exception {
+
+        mockMvc.perform(
+                        get("/api/waitlists/event/10")
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "organizer@test.com",
+            roles = "ORGANIZER"
+    )
+    void getEventWaitlist_organizerShouldBeAllowed()
+            throws Exception {
+
+        when(waitlistService.getWaitlistByEvent(10L))
+                .thenReturn(List.of());
+
+        mockMvc.perform(
+                        get("/api/waitlists/event/10")
+                )
+                .andExpect(status().isOk());
+    }
+    @Test
+    @WithMockUser(
+            username = "organizer@test.com",
+            roles = "ORGANIZER"
+    )
+    void getEventWaitlistByStatus_organizerShouldBeAllowed()
+            throws Exception {
+
+        when(
+                waitlistService.getWaitlistByEventAndStatus(
+                        10L,
+                        WaitlistStatus.WAITING
+                )
+        ).thenReturn(List.of());
+
+        mockMvc.perform(
+                        get("/api/waitlists/event/10/status/WAITING")
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void notifyWaitlist_userRole_shouldBeForbidden()
+            throws Exception {
+
+        mockMvc.perform(
+                        patch("/api/waitlists/1/notify")
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "organizer@test.com",
+            roles = "ORGANIZER"
+    )
+    void notifyWaitlist_organizerShouldBeAllowed()
+            throws Exception {
+
+        when(waitlistService.markAsNotified(1L))
+                .thenReturn(
+                        WaitlistResponse.builder()
+                                .id(1L)
+                                .status(WaitlistStatus.NOTIFIED)
+                                .build()
+                );
+
+        mockMvc.perform(
+                        patch("/api/waitlists/1/notify")
+                )
+                .andExpect(status().isOk());
+    }
+    @Test
+    @WithMockUser(
+            username = "admin@test.com",
+            roles = "ADMIN"
+    )
+    void convertWaitlist_adminShouldBeAllowed()
+            throws Exception {
+
+        when(waitlistService.markAsConverted(1L))
+                .thenReturn(
+                        WaitlistResponse.builder()
+                                .id(1L)
+                                .status(WaitlistStatus.CONVERTED)
+                                .build()
+                );
+
+        mockMvc.perform(
+                        patch("/api/waitlists/1/convert")
+                )
+                .andExpect(status().isOk());
+    }
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void cancelWaitlist_authenticatedUser_shouldBeAllowed()
+            throws Exception {
+
+        when(waitlistService.cancelWaitlist(1L))
+                .thenReturn(
+                        WaitlistResponse.builder()
+                                .id(1L)
+                                .status(WaitlistStatus.CANCELLED)
+                                .build()
+                );
+
+        mockMvc.perform(
+                        patch("/api/waitlists/1/cancel")
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getMyNotifications_withoutAuthentication_shouldBeForbidden()
+            throws Exception {
+
+        mockMvc.perform(
+                        get("/api/notifications/me")
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void getMyNotifications_authenticatedUser_shouldBeAllowed()
+            throws Exception {
+
+        when(notificationService.getMyNotifications())
+                .thenReturn(List.of());
+
+        mockMvc.perform(
+                        get("/api/notifications/me")
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void getMyUnreadNotifications_authenticatedUser_shouldBeAllowed()
+            throws Exception {
+
+        when(notificationService.getMyUnreadNotifications())
+                .thenReturn(List.of());
+
+        mockMvc.perform(
+                        get("/api/notifications/me/unread")
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void countMyUnreadNotifications_authenticatedUser_shouldBeAllowed()
+            throws Exception {
+
+        when(notificationService.countMyUnreadNotifications())
+                .thenReturn(2L);
+
+        mockMvc.perform(
+                        get("/api/notifications/me/unread/count")
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void getNotificationById_authenticatedUser_shouldBeAllowed()
+            throws Exception {
+
+        when(notificationService.getNotificationById(1L))
+                .thenReturn(
+                        NotificationResponse.builder()
+                                .id(1L)
+                                .notificationStatus(NotificationStatus.UNREAD)
+                                .build()
+                );
+
+        mockMvc.perform(
+                        get("/api/notifications/1")
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void markNotificationAsRead_authenticatedUser_shouldBeAllowed()
+            throws Exception {
+
+        when(notificationService.markAsRead(1L))
+                .thenReturn(
+                        NotificationResponse.builder()
+                                .id(1L)
+                                .notificationStatus(NotificationStatus.READ)
+                                .build()
+                );
+
+        mockMvc.perform(
+                        patch("/api/notifications/1/read")
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(
+            username = "user@test.com",
+            roles = "USER"
+    )
+    void markAllNotificationsAsRead_authenticatedUser_shouldBeAllowed()
+            throws Exception {
+
+        mockMvc.perform(
+                        patch("/api/notifications/me/read-all")
+                )
+                .andExpect(status().isNoContent());
     }
 }

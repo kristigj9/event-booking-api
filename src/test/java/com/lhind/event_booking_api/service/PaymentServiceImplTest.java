@@ -20,10 +20,14 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceImplTest {
+
+    @Mock
+    private NotificationService notificationService;
 
     @Mock
     private PaymentRepository paymentRepository;
@@ -43,6 +47,7 @@ class PaymentServiceImplTest {
     private User user;
     private Booking booking;
     private PaymentRequest paymentRequest;
+    private Event event;
 
     @BeforeEach
     void setUp() {
@@ -50,6 +55,12 @@ class PaymentServiceImplTest {
         user = User.builder()
                 .id(1L)
                 .role(Role.USER)
+                .build();
+
+        event = Event.builder()
+                .id(1L)
+                .eventName("Test Event")
+                .eventStatus(EventStatus.PUBLISHED)
                 .build();
 
         EventSeat eventSeat1 = EventSeat.builder()
@@ -65,6 +76,7 @@ class PaymentServiceImplTest {
         booking = Booking.builder()
                 .id(1L)
                 .user(user)
+                .event(event)
                 .bookingStatus(BookingStatus.PENDING)
                 .bookingSeats(new ArrayList<>())
                 .build();
@@ -150,15 +162,12 @@ class PaymentServiceImplTest {
 
         verify(paymentRepository)
                 .save(argThat(saved ->
-
                         saved.getAmount()
                                 .compareTo(
                                         new BigDecimal("25.00")
                                 ) == 0
-
                                 && saved.getPaymentStatus()
                                 == PaymentStatus.PENDING
-
                                 && saved.getBooking()
                                 == booking
                 ));
@@ -230,7 +239,6 @@ class PaymentServiceImplTest {
                 .save(any());
     }
 
-
     // AUTHORIZATION
 
     @Test
@@ -267,7 +275,6 @@ class PaymentServiceImplTest {
     }
 
     // COMPLETE PAYMENT
-
 
     @Test
     void completePayment_shouldSetStatusDateAndTransactionId() {
@@ -331,6 +338,15 @@ class PaymentServiceImplTest {
 
         verify(paymentRepository)
                 .save(payment);
+
+        verify(notificationService, times(1))
+                .createNotification(
+                        eq(user),
+                        eq(event),
+                        eq(booking),
+                        eq(NotificationType.PAYMENT_COMPLETED),
+                        anyString()
+                );
     }
 
     @Test
@@ -353,12 +369,20 @@ class PaymentServiceImplTest {
         assertThrows(
                 InvalidOperationException.class,
                 () ->
-                        paymentService
-                                .completePayment(1L)
+                        paymentService.completePayment(1L)
         );
 
         verify(paymentRepository, never())
                 .save(any());
+
+        verify(notificationService, never())
+                .createNotification(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        anyString()
+                );
     }
 
     // REFUND
@@ -410,6 +434,15 @@ class PaymentServiceImplTest {
 
         verify(paymentRepository)
                 .save(payment);
+
+        verify(notificationService, times(1))
+                .createNotification(
+                        eq(user),
+                        eq(event),
+                        eq(booking),
+                        eq(NotificationType.PAYMENT_REFUNDED),
+                        anyString()
+                );
     }
 
     @Test
@@ -433,8 +466,7 @@ class PaymentServiceImplTest {
                 assertThrows(
                         InvalidOperationException.class,
                         () ->
-                                paymentService
-                                        .refundPayment(1L)
+                                paymentService.refundPayment(1L)
                 );
 
         assertTrue(
@@ -446,5 +478,14 @@ class PaymentServiceImplTest {
 
         verify(paymentRepository, never())
                 .save(any());
+
+        verify(notificationService, never())
+                .createNotification(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        anyString()
+                );
     }
 }

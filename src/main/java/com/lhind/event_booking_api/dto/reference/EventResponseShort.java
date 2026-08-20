@@ -1,6 +1,7 @@
 package com.lhind.event_booking_api.dto.reference;
 
 
+import com.lhind.event_booking_api.entity.EventStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,4 +20,5 @@ public class EventResponseShort {
     private LocalDateTime eventStartDateTime;
 
     private LocalDateTime eventEndDateTime;
+    private EventStatus eventStatus;
 }

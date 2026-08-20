@@ -74,4 +74,18 @@ public class Event {
     )
     @Builder.Default
     private List<EventSeat> eventSeats = new ArrayList<>();
+
+    // Lidhja e Event me Waitlist
+    @OneToMany(
+            mappedBy = "event",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<Waitlist> waitlists = new ArrayList<>();
+
+    //Lidhja Nje Event Disa Notification
+    @OneToMany(mappedBy = "event")
+    @Builder.Default
+    private List<Notification> notifications = new ArrayList<>();
     }

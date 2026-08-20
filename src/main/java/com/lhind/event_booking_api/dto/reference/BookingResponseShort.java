@@ -1,4 +1,4 @@
-package com.lhind.event_booking_api.dto.booking;
+package com.lhind.event_booking_api.dto.reference;
 
 import com.lhind.event_booking_api.entity.BookingStatus;
 import lombok.Builder;

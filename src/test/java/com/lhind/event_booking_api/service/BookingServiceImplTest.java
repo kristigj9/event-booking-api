@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,6 +47,9 @@ class BookingServiceImplTest {
 
     @Mock
     private AuthenticatedUserService authenticatedUserService;
+
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private BookingServiceImpl bookingService;
@@ -230,8 +233,6 @@ class BookingServiceImplTest {
                 .save(any(Booking.class));
     }
 
-    //DUPLICATE SEAT
-
     @Test
     void createBooking_shouldThrowExceptionWhenSameSeatSelectedTwice() {
 
@@ -272,7 +273,6 @@ class BookingServiceImplTest {
                 .save(any(Booking.class));
     }
 
-    //SEAT NUK EKZISTON
     @Test
     void createBooking_shouldThrowExceptionWhenSeatNotFound() {
 
@@ -310,8 +310,6 @@ class BookingServiceImplTest {
         verify(bookingRepository, never())
                 .save(any(Booking.class));
     }
-
-    //SEAT EKZISTON, por nuk eshte lidhur me eventin
 
     @Test
     void createBooking_shouldThrowExceptionWhenSeatNotAssignedToEvent() {
@@ -357,7 +355,6 @@ class BookingServiceImplTest {
         verify(bookingRepository, never())
                 .save(any(Booking.class));
     }
-    //Dhe SEAT EKZISTON, por eshte RESERVED
 
     @Test
     void createBooking_shouldThrowExceptionWhenSeatIsNotAvailable() {
@@ -408,7 +405,7 @@ class BookingServiceImplTest {
                 .save(any(Booking.class));
     }
 
-    //CONFIRM BOOKING
+    // CONFIRM BOOKING
     @Test
     void confirmBooking_shouldConfirmBookingSuccessfully() {
 
@@ -462,9 +459,16 @@ class BookingServiceImplTest {
 
         verify(bookingRepository, times(1))
                 .save(booking);
-    }
 
-//    Testojme qe booking jo PENDING nuk mund te konfirmohet
+        verify(notificationService, times(1))
+                .createNotification(
+                        eq(user),
+                        eq(event),
+                        eq(booking),
+                        eq(NotificationType.BOOKING_CONFIRMED),
+                        anyString()
+                );
+    }
 
     @Test
     void confirmBooking_shouldThrowExceptionWhenBookingIsNotPending() {
@@ -492,9 +496,16 @@ class BookingServiceImplTest {
 
         verify(bookingRepository, never())
                 .save(any(Booking.class));
-    }
 
-//    Test per seat qe nuk eshte RESERVED:
+        verify(notificationService, never())
+                .createNotification(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        anyString()
+                );
+    }
 
     @Test
     void confirmBooking_shouldThrowExceptionWhenSeatIsNotReserved() {
@@ -535,8 +546,16 @@ class BookingServiceImplTest {
 
         verify(bookingRepository, never())
                 .save(any(Booking.class));
+
+        verify(notificationService, never())
+                .createNotification(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        anyString()
+                );
     }
-//    Nje OWNERSHIP test: nje organizer tjeter nuk  Konfermon booking-un e dikujt tjeter
 
     @Test
     void confirmBooking_shouldThrowExceptionWhenOrganizerIsNotEventOwner() {
@@ -572,10 +591,18 @@ class BookingServiceImplTest {
 
         verify(bookingRepository, never())
                 .save(any(Booking.class));
+
+        verify(notificationService, never())
+                .createNotification(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        anyString()
+                );
     }
 
-    // Cancel BOOKING me sukses
-
+    // CANCEL BOOKING
     @Test
     void cancelBooking_shouldCancelBookingSuccessfully() {
 
@@ -638,107 +665,140 @@ class BookingServiceImplTest {
 
         verify(bookingRepository, times(1))
                 .save(booking);
+
+        verify(notificationService, times(1))
+                .createNotification(
+                        eq(user),
+                        eq(event),
+                        eq(booking),
+                        eq(NotificationType.BOOKING_CANCELLED),
+                        anyString()
+                );
     }
 
-//    Booking te ber CANCEL
-@Test
-void cancelBooking_shouldThrowExceptionWhenBookingAlreadyCancelled() {
+    @Test
+    void cancelBooking_shouldThrowExceptionWhenBookingAlreadyCancelled() {
 
-    booking.setBookingStatus(
-            BookingStatus.CANCELLED
-    );
+        booking.setBookingStatus(
+                BookingStatus.CANCELLED
+        );
 
-    when(bookingRepository.findById(1L))
-            .thenReturn(Optional.of(booking));
+        when(bookingRepository.findById(1L))
+                .thenReturn(Optional.of(booking));
 
-    when(authenticatedUserService.getCurrentUser())
-            .thenReturn(user);
+        when(authenticatedUserService.getCurrentUser())
+                .thenReturn(user);
 
-    InvalidOperationException exception =
-            assertThrows(
-                    InvalidOperationException.class,
-                    () -> bookingService.cancelBooking(1L)
-            );
+        InvalidOperationException exception =
+                assertThrows(
+                        InvalidOperationException.class,
+                        () -> bookingService.cancelBooking(1L)
+                );
 
-    assertEquals(
-            "Booking is already cancelled",
-            exception.getMessage()
-    );
+        assertEquals(
+                "Booking is already cancelled",
+                exception.getMessage()
+        );
 
-    verify(bookingRepository, never())
-            .save(any(Booking.class));
-}
-// Booking COMPLETED
-@Test
-void cancelBooking_shouldThrowExceptionWhenBookingIsCompleted() {
+        verify(bookingRepository, never())
+                .save(any(Booking.class));
 
-    booking.setBookingStatus(
-            BookingStatus.COMPLETED
-    );
+        verify(notificationService, never())
+                .createNotification(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        anyString()
+                );
+    }
 
-    when(bookingRepository.findById(1L))
-            .thenReturn(Optional.of(booking));
+    @Test
+    void cancelBooking_shouldThrowExceptionWhenBookingIsCompleted() {
 
-    when(authenticatedUserService.getCurrentUser())
-            .thenReturn(user);
+        booking.setBookingStatus(
+                BookingStatus.COMPLETED
+        );
 
-    InvalidOperationException exception =
-            assertThrows(
-                    InvalidOperationException.class,
-                    () -> bookingService.cancelBooking(1L)
-            );
+        when(bookingRepository.findById(1L))
+                .thenReturn(Optional.of(booking));
 
-    assertEquals(
-            "Completed booking cannot be cancelled",
-            exception.getMessage()
-    );
+        when(authenticatedUserService.getCurrentUser())
+                .thenReturn(user);
 
-    verify(bookingRepository, never())
-            .save(any(Booking.class));
-}
+        InvalidOperationException exception =
+                assertThrows(
+                        InvalidOperationException.class,
+                        () -> bookingService.cancelBooking(1L)
+                );
 
-//Seat eshte SOLD
-@Test
-void cancelBooking_shouldThrowExceptionWhenSeatIsSold() {
+        assertEquals(
+                "Completed booking cannot be cancelled",
+                exception.getMessage()
+        );
 
-    BookingSeat bookingSeat = BookingSeat.builder()
-            .booking(booking)
-            .eventSeat(eventSeat)
-            .build();
+        verify(bookingRepository, never())
+                .save(any(Booking.class));
 
-    booking.setBookingSeats(
-            new ArrayList<>(List.of(bookingSeat))
-    );
+        verify(notificationService, never())
+                .createNotification(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        anyString()
+                );
+    }
 
-    booking.setBookingStatus(
-            BookingStatus.CONFIRMED
-    );
+    @Test
+    void cancelBooking_shouldThrowExceptionWhenSeatIsSold() {
 
-    eventSeat.setStatusSeat(
-            StatusSeat.SOLD
-    );
+        BookingSeat bookingSeat = BookingSeat.builder()
+                .booking(booking)
+                .eventSeat(eventSeat)
+                .build();
 
-    when(bookingRepository.findById(1L))
-            .thenReturn(Optional.of(booking));
+        booking.setBookingSeats(
+                new ArrayList<>(List.of(bookingSeat))
+        );
 
-    when(authenticatedUserService.getCurrentUser())
-            .thenReturn(user);
+        booking.setBookingStatus(
+                BookingStatus.CONFIRMED
+        );
 
-    InvalidOperationException exception =
-            assertThrows(
-                    InvalidOperationException.class,
-                    () -> bookingService.cancelBooking(1L)
-            );
+        eventSeat.setStatusSeat(
+                StatusSeat.SOLD
+        );
 
-    assertEquals(
-            "Confirmed seats cannot be released",
-            exception.getMessage()
-    );
+        when(bookingRepository.findById(1L))
+                .thenReturn(Optional.of(booking));
 
-    verify(bookingRepository, never())
-            .save(any(Booking.class));
-}
-//OWNESHIP: Nuk ndryshohet statusi CANCEL i booking te nje OWNER tjeter
+        when(authenticatedUserService.getCurrentUser())
+                .thenReturn(user);
+
+        InvalidOperationException exception =
+                assertThrows(
+                        InvalidOperationException.class,
+                        () -> bookingService.cancelBooking(1L)
+                );
+
+        assertEquals(
+                "Confirmed seats cannot be released",
+                exception.getMessage()
+        );
+
+        verify(bookingRepository, never())
+                .save(any(Booking.class));
+
+        verify(notificationService, never())
+                .createNotification(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        anyString()
+                );
+    }
 
     @Test
     void cancelBooking_shouldThrowExceptionWhenUserIsNotOwner() {
@@ -774,10 +834,18 @@ void cancelBooking_shouldThrowExceptionWhenSeatIsSold() {
 
         verify(bookingRepository, never())
                 .save(any(Booking.class));
+
+        verify(notificationService, never())
+                .createNotification(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        anyString()
+                );
     }
 
-//    Booking CONFIRMED kalon me sukses ne COMPLETED
-
+    // COMPLETE BOOKING
     @Test
     void completeBooking_shouldCompleteBookingSuccessfully() {
 
@@ -813,16 +881,23 @@ void cancelBooking_shouldThrowExceptionWhenSeatIsSold() {
 
         verify(bookingRepository, times(1))
                 .save(booking);
+
+        verify(notificationService, times(1))
+                .createNotification(
+                        eq(user),
+                        eq(event),
+                        eq(booking),
+                        eq(NotificationType.BOOKING_COMPLETED),
+                        anyString()
+                );
     }
 
-    //Booking qe nuk eshte CONFIRMED refuzohet
     @Test
     void completeBooking_shouldThrowExceptionWhenBookingIsNotConfirmed() {
 
         booking.setBookingStatus(
                 BookingStatus.PENDING
         );
-
 
         when(bookingRepository.findById(1L))
                 .thenReturn(Optional.of(booking));
@@ -843,10 +918,16 @@ void cancelBooking_shouldThrowExceptionWhenSeatIsSold() {
 
         verify(bookingRepository, never())
                 .save(any(Booking.class));
+
+        verify(notificationService, never())
+                .createNotification(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        anyString()
+                );
     }
-
-//     ORGANIZER qe nuk eshte owner i Event refuzohet
-
 
     @Test
     void completeBooking_shouldThrowExceptionWhenOrganizerIsNotEventOwner() {
@@ -882,9 +963,16 @@ void cancelBooking_shouldThrowExceptionWhenSeatIsSold() {
 
         verify(bookingRepository, never())
                 .save(any(Booking.class));
-    }
 
-//    Gjetja me ID E BOOKING
+        verify(notificationService, never())
+                .createNotification(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        anyString()
+                );
+    }
 
     @Test
     void getBookingById_shouldReturnBookingSuccessfully() {
@@ -915,7 +1003,6 @@ void cancelBooking_shouldThrowExceptionWhenSeatIsSold() {
                 .toResponse(booking);
     }
 
-    //Gjetja sipas ID BOOKING vetem kur eshte OWNER
     @Test
     void getBookingById_shouldThrowExceptionWhenUserIsNotOwner() {
 
@@ -948,8 +1035,6 @@ void cancelBooking_shouldThrowExceptionWhenSeatIsSold() {
                 .toResponse(any(Booking.class));
     }
 
-//    USER sheh listen e booking te llogarise se tij
-
     @Test
     void getMyBookings_shouldReturnCurrentUserBookings() {
 
@@ -977,8 +1062,6 @@ void cancelBooking_shouldThrowExceptionWhenSeatIsSold() {
         verify(bookingRepository, times(1))
                 .findByUserId(user.getId());
     }
-
-//Filtri i BOOKING  sipas nje EVENTI
 
     @Test
     void getBookingsByEvent_shouldReturnBookingsSuccessfully() {
@@ -1011,8 +1094,6 @@ void cancelBooking_shouldThrowExceptionWhenSeatIsSold() {
                 .findByEventId(1L);
     }
 
-//    ORGANIZER nuk eshte nje OWNER
-
     @Test
     void getBookingsByEvent_shouldThrowExceptionWhenOrganizerIsNotOwner() {
 
@@ -1044,8 +1125,6 @@ void cancelBooking_shouldThrowExceptionWhenSeatIsSold() {
         verify(bookingRepository, never())
                 .findByEventId(anyLong());
     }
-
-//    Filtri i BOOKING sipas Statusit
 
     @Test
     void getMyBookingsByStatus_shouldReturnBookingsWithSelectedStatus() {

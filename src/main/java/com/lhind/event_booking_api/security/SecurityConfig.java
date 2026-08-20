@@ -379,7 +379,6 @@ public class SecurityConfig {
                         // REVIEWS
 
                         // AUTHENTICATED - reviews personale
-                        // Duhet te jete para /api/reviews/*
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/reviews/me"
@@ -404,21 +403,114 @@ public class SecurityConfig {
                         ).authenticated()
 
                         // OWNER / ADMIN
-                        // Ownership kontrollohet ne Service
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/reviews/*"
                         ).authenticated()
 
                         // OWNER / ADMIN
-                        // Ownership kontrollohet ne Service
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/reviews/*"
                         ).authenticated()
 
 
-                        // CDO REQUEST TJETER
+                        // WAITLIST - ORGANIZER / ADMIN
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/waitlists/event/*/status/*"
+                        ).hasAnyRole(
+                                "ORGANIZER",
+                                "ADMIN"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/waitlists/event/*"
+                        ).hasAnyRole(
+                                "ORGANIZER",
+                                "ADMIN"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/waitlists/*/notify"
+                        ).hasAnyRole(
+                                "ORGANIZER",
+                                "ADMIN"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/waitlists/*/convert"
+                        ).hasAnyRole(
+                                "ORGANIZER",
+                                "ADMIN"
+                        )
+
+
+                        // WAITLIST - USER I AUTENTIKUAR
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/waitlists/event/*"
+                        ).authenticated()
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/waitlists/my"
+                        ).authenticated()
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/waitlists/*/cancel"
+                        ).authenticated()
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/waitlists/*"
+                        ).authenticated()
+
+                                // NOTIFICATIONS
+                                // USER / ORGANIZER / ADMIN
+                        // Merr notifications personale
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/notifications/me"
+                                ).authenticated()
+                                // USER / ORGANIZER / ADMIN
+                                // Merr notifications UNREAD
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/notifications/me/unread"
+                                ).authenticated()
+                                // USER / ORGANIZER / ADMIN
+                                // Numeron notifications UNREAD
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/notifications/me/unread/count"
+                                ).authenticated()
+                                // USER owner / ADMIN
+                                // Ownership kontrollohet  Service
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/notifications/*"
+                                ).authenticated()
+                                // USER owner / ADMIN
+                                // UNREAD -> READ
+                                .requestMatchers(
+                                        HttpMethod.PATCH,
+                                        "/api/notifications/*/read"
+                                ).authenticated()
+                                // USER / ORGANIZER / ADMIN
+                                // Te gjitha notifications personale -> READ
+                                .requestMatchers(
+                                        HttpMethod.PATCH,
+                                        "/api/notifications/me/read-all"
+                                ).authenticated()
+
+                        // CDO REQUEST TJETER - GJITHMONE I FUNDIT
 
                         .anyRequest().authenticated()
                 )
@@ -430,5 +522,4 @@ public class SecurityConfig {
                 );
 
         return http.build();
-    }
-}
+}}

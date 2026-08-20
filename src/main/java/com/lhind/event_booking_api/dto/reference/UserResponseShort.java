@@ -14,4 +14,6 @@ public class UserResponseShort {
     private String firstName;
 
     private String lastName;
+    private String email;
+
 }
