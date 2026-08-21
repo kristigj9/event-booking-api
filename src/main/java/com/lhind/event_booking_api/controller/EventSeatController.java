@@ -101,7 +101,9 @@ public class EventSeatController {
     ) {
 
         return ResponseEntity.ok(
-                eventSeatService.getEventSeatById(id)
+                eventSeatService.getEventSeatById(
+                        id
+                )
         );
     }
 
@@ -126,7 +128,9 @@ public class EventSeatController {
     ) {
 
         return ResponseEntity.ok(
-                eventSeatService.getSeatsByEvent(eventId)
+                eventSeatService.getSeatsByEvent(
+                        eventId
+                )
         );
     }
 
@@ -207,7 +211,7 @@ public class EventSeatController {
     // ORGANIZER OWNER / ADMIN
     @Operation(
             summary = "Delete event seat",
-            description = "Removes a seat from an event. Only AVAILABLE event seats can be deleted. Accessible by the event organizer or ADMIN"
+            description = "Removes an AVAILABLE event seat that is not referenced by any booking. Accessible by the event organizer or ADMIN"
     )
     @ApiResponses({
             @ApiResponse(
@@ -216,7 +220,7 @@ public class EventSeatController {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Only available event seats can be deleted"
+                    description = "Event seat is not available or is referenced by a booking"
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -236,7 +240,9 @@ public class EventSeatController {
             @PathVariable Long eventSeatId
     ) {
 
-        eventSeatService.deleteEventSeat(eventSeatId);
+        eventSeatService.deleteEventSeat(
+                eventSeatId
+        );
 
         return ResponseEntity
                 .noContent()

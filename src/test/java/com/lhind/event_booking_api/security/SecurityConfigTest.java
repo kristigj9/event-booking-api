@@ -9,23 +9,28 @@ import com.lhind.event_booking_api.entity.NotificationStatus;
 import com.lhind.event_booking_api.entity.PaymentMethod;
 import com.lhind.event_booking_api.entity.PaymentStatus;
 import com.lhind.event_booking_api.entity.WaitlistStatus;
-import com.lhind.event_booking_api.service.*;
-
-import java.math.BigDecimal;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-
+import com.lhind.event_booking_api.service.EventService;
+import com.lhind.event_booking_api.service.NotificationService;
+import com.lhind.event_booking_api.service.PaymentService;
+import com.lhind.event_booking_api.service.ReviewService;
+import com.lhind.event_booking_api.service.VenueService;
+import com.lhind.event_booking_api.service.WaitlistService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+
+import java.math.BigDecimal;
 import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,18 +48,24 @@ class SecurityConfigTest {
 
     @MockitoBean
     private VenueService venueService;
+
     @MockitoBean
     private ReviewService reviewService;
+
     @MockitoBean
     private PaymentService paymentService;
+
     @MockitoBean
     private WaitlistService waitlistService;
+
     @MockitoBean
     private NotificationService notificationService;
 
+    // EVENTS
 
     @Test
-    void getEvents_shouldBePublic() throws Exception {
+    void getEvents_shouldBePublic()
+            throws Exception {
 
         when(eventService.getAllEvents())
                 .thenReturn(List.of());
@@ -64,32 +75,6 @@ class SecurityConfigTest {
                 )
                 .andExpect(
                         status().isOk()
-                );
-    }
-
-    @Test
-    void getVenues_shouldBePublic() throws Exception {
-
-        when(venueService.getAllVenues())
-                .thenReturn(List.of());
-
-        mockMvc.perform(
-                        get("/api/venues")
-                )
-                .andExpect(
-                        status().isOk()
-                );
-    }
-
-    @Test
-    void getCurrentUser_shouldRejectAnonymousUser()
-            throws Exception {
-
-        mockMvc.perform(
-                        get("/api/users/me")
-                )
-                .andExpect(
-                        status().is4xxClientError()
                 );
     }
 
@@ -119,7 +104,9 @@ class SecurityConfigTest {
                                         user("organizer@test.com")
                                                 .roles("ORGANIZER")
                                 )
-                                .contentType("application/json")
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("{}")
                 )
                 .andExpect(
@@ -137,11 +124,45 @@ class SecurityConfigTest {
                                         user("admin@test.com")
                                                 .roles("ADMIN")
                                 )
-                                .contentType("application/json")
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("{}")
                 )
                 .andExpect(
                         status().isBadRequest()
+                );
+    }
+
+    // USERS
+
+    @Test
+    void getCurrentUser_shouldRejectAnonymousUser()
+            throws Exception {
+
+        mockMvc.perform(
+                        get("/api/users/me")
+                )
+                .andExpect(
+                        status().isUnauthorized()
+                );
+    }
+
+    // VENUES
+
+
+    @Test
+    void getVenues_shouldBePublic()
+            throws Exception {
+
+        when(venueService.getAllVenues())
+                .thenReturn(List.of());
+
+        mockMvc.perform(
+                        get("/api/venues")
+                )
+                .andExpect(
+                        status().isOk()
                 );
     }
 
@@ -187,7 +208,9 @@ class SecurityConfigTest {
                                         user("admin@test.com")
                                                 .roles("ADMIN")
                                 )
-                                .contentType("application/json")
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("{}")
                 )
                 .andExpect(
@@ -195,8 +218,12 @@ class SecurityConfigTest {
                 );
     }
 
+
+    // CATEGORIES
+
     @Test
-    void createCategory_shouldRejectUser() throws Exception {
+    void createCategory_shouldRejectUser()
+            throws Exception {
 
         mockMvc.perform(
                         post("/api/categories")
@@ -211,7 +238,8 @@ class SecurityConfigTest {
     }
 
     @Test
-    void createCategory_shouldPassSecurityForAdmin() throws Exception {
+    void createCategory_shouldPassSecurityForAdmin()
+            throws Exception {
 
         mockMvc.perform(
                         post("/api/categories")
@@ -219,7 +247,9 @@ class SecurityConfigTest {
                                         user("admin@test.com")
                                                 .roles("ADMIN")
                                 )
-                                .contentType("application/json")
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("{}")
                 )
                 .andExpect(
@@ -227,8 +257,11 @@ class SecurityConfigTest {
                 );
     }
 
+    // SEATS
+
     @Test
-    void createSeat_shouldRejectOrganizer() throws Exception {
+    void createSeat_shouldRejectOrganizer()
+            throws Exception {
 
         mockMvc.perform(
                         post("/api/seats")
@@ -243,7 +276,8 @@ class SecurityConfigTest {
     }
 
     @Test
-    void createSeat_shouldPassSecurityForAdmin() throws Exception {
+    void createSeat_shouldPassSecurityForAdmin()
+            throws Exception {
 
         mockMvc.perform(
                         post("/api/seats")
@@ -251,7 +285,9 @@ class SecurityConfigTest {
                                         user("admin@test.com")
                                                 .roles("ADMIN")
                                 )
-                                .contentType("application/json")
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("{}")
                 )
                 .andExpect(
@@ -259,8 +295,12 @@ class SecurityConfigTest {
                 );
     }
 
+    // EVENT SEATS
+
+
     @Test
-    void createEventSeat_shouldRejectUser() throws Exception {
+    void createEventSeat_shouldRejectUser()
+            throws Exception {
 
         mockMvc.perform(
                         post("/api/event-seats/event/1")
@@ -275,7 +315,8 @@ class SecurityConfigTest {
     }
 
     @Test
-    void createEventSeat_shouldPassSecurityForOrganizer() throws Exception {
+    void createEventSeat_shouldPassSecurityForOrganizer()
+            throws Exception {
 
         mockMvc.perform(
                         post("/api/event-seats/event/1")
@@ -283,7 +324,9 @@ class SecurityConfigTest {
                                         user("organizer@test.com")
                                                 .roles("ORGANIZER")
                                 )
-                                .contentType("application/json")
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("{}")
                 )
                 .andExpect(
@@ -291,21 +334,27 @@ class SecurityConfigTest {
                 );
     }
 
+    // BOOKINGS
+
     @Test
-    void createBooking_shouldRejectAnonymousUser() throws Exception {
+    void createBooking_shouldRejectAnonymousUser()
+            throws Exception {
 
         mockMvc.perform(
                         post("/api/bookings")
-                                .contentType("application/json")
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("{}")
                 )
                 .andExpect(
-                        status().is4xxClientError()
+                        status().isUnauthorized()
                 );
     }
 
     @Test
-    void createBooking_shouldPassSecurityForUser() throws Exception {
+    void createBooking_shouldPassSecurityForUser()
+            throws Exception {
 
         mockMvc.perform(
                         post("/api/bookings")
@@ -313,7 +362,9 @@ class SecurityConfigTest {
                                         user("user@test.com")
                                                 .roles("USER")
                                 )
-                                .contentType("application/json")
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("{}")
                 )
                 .andExpect(
@@ -322,7 +373,8 @@ class SecurityConfigTest {
     }
 
     @Test
-    void confirmBooking_shouldRejectUserRole() throws Exception {
+    void confirmBooking_shouldRejectUserRole()
+            throws Exception {
 
         mockMvc.perform(
                         patch("/api/bookings/1/confirm")
@@ -336,8 +388,12 @@ class SecurityConfigTest {
                 );
     }
 
+    // REVIEWS
+    //
+
     @Test
-    void getReviewsByEvent_shouldBePublic() throws Exception {
+    void getReviewsByEvent_shouldBePublic()
+            throws Exception {
 
         when(reviewService.getReviewsByEvent(1L))
                 .thenReturn(List.of());
@@ -351,20 +407,24 @@ class SecurityConfigTest {
     }
 
     @Test
-    void createReview_shouldRejectAnonymousUser() throws Exception {
+    void createReview_shouldRejectAnonymousUser()
+            throws Exception {
 
         mockMvc.perform(
                         post("/api/reviews")
-                                .contentType("application/json")
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("{}")
                 )
                 .andExpect(
-                        status().is4xxClientError()
+                        status().isUnauthorized()
                 );
     }
 
     @Test
-    void createReview_shouldPassSecurityForUser() throws Exception {
+    void createReview_shouldPassSecurityForUser()
+            throws Exception {
 
         mockMvc.perform(
                         post("/api/reviews")
@@ -372,7 +432,9 @@ class SecurityConfigTest {
                                         user("user@test.com")
                                                 .roles("USER")
                                 )
-                                .contentType("application/json")
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("{}")
                 )
                 .andExpect(
@@ -380,24 +442,27 @@ class SecurityConfigTest {
                 );
     }
 
-    // --------------------------------
-// PAYMENTS
-// --------------------------------
+    // PAYMENTS
+
 
     @Test
-    void createPayment_withoutAuthentication_shouldBeForbidden()
+    void createPayment_withoutAuthentication_shouldBeUnauthorized()
             throws Exception {
 
         mockMvc.perform(
                         post("/api/payments/booking/1")
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("""
-                            {
-                              "paymentMethod": "CARD"
-                            }
-                            """)
+                                        {
+                                          "paymentMethod": "CARD"
+                                        }
+                                        """)
                 )
-                .andExpect(status().isForbidden());
+                .andExpect(
+                        status().isUnauthorized()
+                );
     }
 
     @Test
@@ -414,32 +479,44 @@ class SecurityConfigTest {
         )).thenReturn(
                 PaymentResponse.builder()
                         .id(1L)
-                        .amount(new BigDecimal("25.00"))
-                        .paymentMethod(PaymentMethod.CARD)
-                        .paymentStatus(PaymentStatus.PENDING)
+                        .amount(
+                                new BigDecimal("25.00")
+                        )
+                        .paymentMethod(
+                                PaymentMethod.CARD
+                        )
+                        .paymentStatus(
+                                PaymentStatus.PENDING
+                        )
                         .build()
         );
 
         mockMvc.perform(
                         post("/api/payments/booking/1")
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("""
-                            {
-                              "paymentMethod": "CARD"
-                            }
-                            """)
+                                        {
+                                          "paymentMethod": "CARD"
+                                        }
+                                        """)
                 )
-                .andExpect(status().isCreated());
+                .andExpect(
+                        status().isCreated()
+                );
     }
 
     @Test
-    void getPayment_withoutAuthentication_shouldBeForbidden()
+    void getPayment_withoutAuthentication_shouldBeUnauthorized()
             throws Exception {
 
         mockMvc.perform(
                         get("/api/payments/1")
                 )
-                .andExpect(status().isForbidden());
+                .andExpect(
+                        status().isUnauthorized()
+                );
     }
 
     @Test
@@ -454,16 +531,24 @@ class SecurityConfigTest {
                 .thenReturn(
                         PaymentResponse.builder()
                                 .id(1L)
-                                .amount(new BigDecimal("25.00"))
-                                .paymentMethod(PaymentMethod.CARD)
-                                .paymentStatus(PaymentStatus.PENDING)
+                                .amount(
+                                        new BigDecimal("25.00")
+                                )
+                                .paymentMethod(
+                                        PaymentMethod.CARD
+                                )
+                                .paymentStatus(
+                                        PaymentStatus.PENDING
+                                )
                                 .build()
                 );
 
         mockMvc.perform(
                         get("/api/payments/1")
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
 
     @Test
@@ -478,14 +563,18 @@ class SecurityConfigTest {
                 .thenReturn(
                         PaymentResponse.builder()
                                 .id(1L)
-                                .paymentStatus(PaymentStatus.COMPLETED)
+                                .paymentStatus(
+                                        PaymentStatus.COMPLETED
+                                )
                                 .build()
                 );
 
         mockMvc.perform(
                         patch("/api/payments/1/complete")
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
 
     @Test
@@ -500,30 +589,40 @@ class SecurityConfigTest {
                 .thenReturn(
                         PaymentResponse.builder()
                                 .id(1L)
-                                .paymentStatus(PaymentStatus.REFUNDED)
+                                .paymentStatus(
+                                        PaymentStatus.REFUNDED
+                                )
                                 .build()
                 );
 
         mockMvc.perform(
                         patch("/api/payments/1/refund")
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
 
+    // WAITLIST
+
     @Test
-    void joinWaitlist_withoutAuthentication_shouldBeForbidden()
+    void joinWaitlist_withoutAuthentication_shouldBeUnauthorized()
             throws Exception {
 
         mockMvc.perform(
                         post("/api/waitlists/event/10")
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("""
-                            {
-                              "requestedSeats": 2
-                            }
-                            """)
+                                        {
+                                          "requestedSeats": 2
+                                        }
+                                        """)
                 )
-                .andExpect(status().isForbidden());
+                .andExpect(
+                        status().isUnauthorized()
+                );
     }
 
     @Test
@@ -538,27 +637,32 @@ class SecurityConfigTest {
                 WaitlistResponse.builder()
                         .id(1L)
                         .requestedSeats(2)
-                        .status(WaitlistStatus.WAITING)
+                        .status(
+                                WaitlistStatus.WAITING
+                        )
                         .build();
 
-        when(
-                waitlistService.joinWaitlist(
-                        eq(10L),
-                        any(WaitlistRequest.class)
-                )
-        ).thenReturn(response);
+        when(waitlistService.joinWaitlist(
+                eq(10L),
+                any(WaitlistRequest.class)
+        )).thenReturn(response);
 
         mockMvc.perform(
                         post("/api/waitlists/event/10")
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("""
-                            {
-                              "requestedSeats": 2
-                            }
-                            """)
+                                        {
+                                          "requestedSeats": 2
+                                        }
+                                        """)
                 )
-                .andExpect(status().isCreated());
+                .andExpect(
+                        status().isCreated()
+                );
     }
+
     @Test
     @WithMockUser(
             username = "user@test.com",
@@ -573,8 +677,11 @@ class SecurityConfigTest {
         mockMvc.perform(
                         get("/api/waitlists/my")
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
+
     @Test
     @WithMockUser(
             username = "user@test.com",
@@ -587,14 +694,18 @@ class SecurityConfigTest {
                 .thenReturn(
                         WaitlistResponse.builder()
                                 .id(1L)
-                                .status(WaitlistStatus.WAITING)
+                                .status(
+                                        WaitlistStatus.WAITING
+                                )
                                 .build()
                 );
 
         mockMvc.perform(
                         get("/api/waitlists/1")
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
 
     @Test
@@ -608,7 +719,9 @@ class SecurityConfigTest {
         mockMvc.perform(
                         get("/api/waitlists/event/10")
                 )
-                .andExpect(status().isForbidden());
+                .andExpect(
+                        status().isForbidden()
+                );
     }
 
     @Test
@@ -625,8 +738,11 @@ class SecurityConfigTest {
         mockMvc.perform(
                         get("/api/waitlists/event/10")
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
+
     @Test
     @WithMockUser(
             username = "organizer@test.com",
@@ -635,17 +751,21 @@ class SecurityConfigTest {
     void getEventWaitlistByStatus_organizerShouldBeAllowed()
             throws Exception {
 
-        when(
-                waitlistService.getWaitlistByEventAndStatus(
+        when(waitlistService
+                .getWaitlistByEventAndStatus(
                         10L,
                         WaitlistStatus.WAITING
-                )
-        ).thenReturn(List.of());
+                ))
+                .thenReturn(List.of());
 
         mockMvc.perform(
-                        get("/api/waitlists/event/10/status/WAITING")
+                        get(
+                                "/api/waitlists/event/10/status/WAITING"
+                        )
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
 
     @Test
@@ -659,7 +779,9 @@ class SecurityConfigTest {
         mockMvc.perform(
                         patch("/api/waitlists/1/notify")
                 )
-                .andExpect(status().isForbidden());
+                .andExpect(
+                        status().isForbidden()
+                );
     }
 
     @Test
@@ -674,15 +796,20 @@ class SecurityConfigTest {
                 .thenReturn(
                         WaitlistResponse.builder()
                                 .id(1L)
-                                .status(WaitlistStatus.NOTIFIED)
+                                .status(
+                                        WaitlistStatus.NOTIFIED
+                                )
                                 .build()
                 );
 
         mockMvc.perform(
                         patch("/api/waitlists/1/notify")
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
+
     @Test
     @WithMockUser(
             username = "admin@test.com",
@@ -695,15 +822,20 @@ class SecurityConfigTest {
                 .thenReturn(
                         WaitlistResponse.builder()
                                 .id(1L)
-                                .status(WaitlistStatus.CONVERTED)
+                                .status(
+                                        WaitlistStatus.CONVERTED
+                                )
                                 .build()
                 );
 
         mockMvc.perform(
                         patch("/api/waitlists/1/convert")
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
+
     @Test
     @WithMockUser(
             username = "user@test.com",
@@ -716,24 +848,32 @@ class SecurityConfigTest {
                 .thenReturn(
                         WaitlistResponse.builder()
                                 .id(1L)
-                                .status(WaitlistStatus.CANCELLED)
+                                .status(
+                                        WaitlistStatus.CANCELLED
+                                )
                                 .build()
                 );
 
         mockMvc.perform(
                         patch("/api/waitlists/1/cancel")
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
 
+    // NOTIFICATIONS
+
     @Test
-    void getMyNotifications_withoutAuthentication_shouldBeForbidden()
+    void getMyNotifications_withoutAuthentication_shouldBeUnauthorized()
             throws Exception {
 
         mockMvc.perform(
                         get("/api/notifications/me")
                 )
-                .andExpect(status().isForbidden());
+                .andExpect(
+                        status().isUnauthorized()
+                );
     }
 
     @Test
@@ -750,7 +890,9 @@ class SecurityConfigTest {
         mockMvc.perform(
                         get("/api/notifications/me")
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
 
     @Test
@@ -761,13 +903,16 @@ class SecurityConfigTest {
     void getMyUnreadNotifications_authenticatedUser_shouldBeAllowed()
             throws Exception {
 
-        when(notificationService.getMyUnreadNotifications())
+        when(notificationService
+                .getMyUnreadNotifications())
                 .thenReturn(List.of());
 
         mockMvc.perform(
                         get("/api/notifications/me/unread")
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
 
     @Test
@@ -778,13 +923,18 @@ class SecurityConfigTest {
     void countMyUnreadNotifications_authenticatedUser_shouldBeAllowed()
             throws Exception {
 
-        when(notificationService.countMyUnreadNotifications())
+        when(notificationService
+                .countMyUnreadNotifications())
                 .thenReturn(2L);
 
         mockMvc.perform(
-                        get("/api/notifications/me/unread/count")
+                        get(
+                                "/api/notifications/me/unread/count"
+                        )
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
 
     @Test
@@ -795,18 +945,23 @@ class SecurityConfigTest {
     void getNotificationById_authenticatedUser_shouldBeAllowed()
             throws Exception {
 
-        when(notificationService.getNotificationById(1L))
+        when(notificationService
+                .getNotificationById(1L))
                 .thenReturn(
                         NotificationResponse.builder()
                                 .id(1L)
-                                .notificationStatus(NotificationStatus.UNREAD)
+                                .notificationStatus(
+                                        NotificationStatus.UNREAD
+                                )
                                 .build()
                 );
 
         mockMvc.perform(
                         get("/api/notifications/1")
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
 
     @Test
@@ -821,14 +976,18 @@ class SecurityConfigTest {
                 .thenReturn(
                         NotificationResponse.builder()
                                 .id(1L)
-                                .notificationStatus(NotificationStatus.READ)
+                                .notificationStatus(
+                                        NotificationStatus.READ
+                                )
                                 .build()
                 );
 
         mockMvc.perform(
                         patch("/api/notifications/1/read")
                 )
-                .andExpect(status().isOk());
+                .andExpect(
+                        status().isOk()
+                );
     }
 
     @Test
@@ -840,8 +999,12 @@ class SecurityConfigTest {
             throws Exception {
 
         mockMvc.perform(
-                        patch("/api/notifications/me/read-all")
+                        patch(
+                                "/api/notifications/me/read-all"
+                        )
                 )
-                .andExpect(status().isNoContent());
+                .andExpect(
+                        status().isNoContent()
+                );
     }
 }

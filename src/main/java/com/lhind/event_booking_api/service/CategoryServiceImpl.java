@@ -4,6 +4,7 @@ import com.lhind.event_booking_api.dto.category.CategoryRequest;
 import com.lhind.event_booking_api.dto.category.CategoryResponse;
 import com.lhind.event_booking_api.entity.Category;
 import com.lhind.event_booking_api.exception.DuplicateResourceException;
+import com.lhind.event_booking_api.exception.InvalidOperationException;
 import com.lhind.event_booking_api.exception.ResourceNotFoundException;
 import com.lhind.event_booking_api.mapper.CategoryMapper;
 import com.lhind.event_booking_api.repository.CategoryRepository;
@@ -100,10 +101,9 @@ public class CategoryServiceImpl implements CategoryService {
                 "Fetching all categories"
         );
 
-        List<Category> categories =
-                categoryRepository.findAll();
-
-        return categoryMapper.toResponseList(categories);
+        return categoryMapper.toResponseList(
+                categoryRepository.findAll()
+        );
     }
 
     // UPDATE
@@ -170,6 +170,19 @@ public class CategoryServiceImpl implements CategoryService {
 
         Category category =
                 findCategory(id);
+
+        // Nuk lejojme fshirjen nese Category perdoret nga Event
+        if (!category.getEvents().isEmpty()) {
+
+            log.warn(
+                    "Category deletion rejected for category id: {} because it is assigned to events",
+                    id
+            );
+
+            throw new InvalidOperationException(
+                    "Category cannot be deleted because it is assigned to one or more events"
+            );
+        }
 
         categoryRepository.delete(category);
 

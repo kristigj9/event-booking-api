@@ -24,16 +24,22 @@ public class Notification {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private NotificationStatus notificationStatus;
+    @Builder.Default
+    private NotificationStatus notificationStatus =
+            NotificationStatus.UNREAD;
 
     @Column(nullable = false)
     private String message;
 
-    @Column(nullable = false)
+    @Column(
+            nullable = false,
+            updatable = false
+    )
     private LocalDateTime createdAt;
 
     private LocalDateTime readAt;
 
+    // User qe merr notification
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "user_id",
@@ -41,10 +47,12 @@ public class Notification {
     )
     private User user;
 
+    // Eventi me te cilin lidhet notification
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")
     private Event event;
 
+    // Booking me te cilin lidhet notification
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id")
     private Booking booking;

@@ -10,6 +10,8 @@ import com.lhind.event_booking_api.repository.BookingRepository;
 import com.lhind.event_booking_api.repository.PaymentRepository;
 import com.lhind.event_booking_api.security.AuthenticatedUserService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +23,16 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
+    private static final Logger log =
+            LogManager.getLogger(PaymentServiceImpl.class);
+
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository;
     private final PaymentMapper paymentMapper;
     private final AuthenticatedUserService authenticatedUserService;
     private final NotificationService notificationService;
 
+    // CREATE PAYMENT
     @Override
     @Transactional
     public PaymentResponse createPayment(
@@ -34,12 +40,26 @@ public class PaymentServiceImpl implements PaymentService {
             PaymentRequest request
     ) {
 
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Booking not found with id: " + bookingId
-                        )
-                );
+        log.info(
+                "Payment creation requested for booking id: {}",
+                bookingId
+        );
+
+        Booking booking =
+                bookingRepository
+                        .findById(bookingId)
+                        .orElseThrow(() -> {
+
+                            log.warn(
+                                    "Booking not found with id: {}",
+                                    bookingId
+                            );
+
+                            return new ResourceNotFoundException(
+                                    "Booking not found with id: "
+                                            + bookingId
+                            );
+                        });
 
         User currentUser =
                 authenticatedUserService.getCurrentUser();
@@ -49,14 +69,27 @@ public class PaymentServiceImpl implements PaymentService {
                 currentUser
         );
 
-        if (paymentRepository.existsByBookingId(bookingId)) {
+        if (paymentRepository
+                .existsByBookingId(bookingId)) {
+
+            log.warn(
+                    "Payment creation rejected because payment already exists for booking id: {}",
+                    bookingId
+            );
+
             throw new InvalidOperationException(
-                    "Payment already exists for booking: " + bookingId
+                    "Payment already exists for booking: "
+                            + bookingId
             );
         }
 
         if (booking.getBookingStatus()
                 == BookingStatus.CANCELLED) {
+
+            log.warn(
+                    "Payment creation rejected because booking id: {} is cancelled",
+                    bookingId
+            );
 
             throw new InvalidOperationException(
                     "Payment cannot be created for a cancelled booking"
@@ -66,33 +99,55 @@ public class PaymentServiceImpl implements PaymentService {
         if (booking.getBookingStatus()
                 == BookingStatus.COMPLETED) {
 
+            log.warn(
+                    "Payment creation rejected because booking id: {} is completed",
+                    bookingId
+            );
+
             throw new InvalidOperationException(
                     "Payment cannot be created for a completed booking"
             );
         }
 
+        BigDecimal amount =
+                calculateAmount(booking);
+
         Payment payment =
                 paymentMapper.toEntity(request);
 
-        payment.setBooking(booking);
-        payment.setAmount(calculateAmount(booking));
-        payment.setPaymentStatus(
-                PaymentStatus.PENDING
+        payment.setBooking(
+                booking
+        );
+
+        payment.setAmount(
+                amount
         );
 
         Payment savedPayment =
                 paymentRepository.save(payment);
+
+        log.info(
+                "Payment created successfully with id: {} for booking id: {}",
+                savedPayment.getId(),
+                bookingId
+        );
 
         return paymentMapper.toResponse(
                 savedPayment
         );
     }
 
+    // GET PAYMENT BY ID
     @Override
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentById(
             Long paymentId
     ) {
+
+        log.debug(
+                "Fetching payment by id: {}",
+                paymentId
+        );
 
         Payment payment =
                 findPayment(paymentId);
@@ -110,21 +165,33 @@ public class PaymentServiceImpl implements PaymentService {
         );
     }
 
+    // GET PAYMENT BY BOOKING
     @Override
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentByBookingId(
             Long bookingId
     ) {
 
+        log.debug(
+                "Fetching payment for booking id: {}",
+                bookingId
+        );
+
         Payment payment =
                 paymentRepository
                         .findByBookingId(bookingId)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Payment not found for booking: "
-                                                + bookingId
-                                )
-                        );
+                        .orElseThrow(() -> {
+
+                            log.warn(
+                                    "Payment not found for booking id: {}",
+                                    bookingId
+                            );
+
+                            return new ResourceNotFoundException(
+                                    "Payment not found for booking: "
+                                            + bookingId
+                            );
+                        });
 
         User currentUser =
                 authenticatedUserService.getCurrentUser();
@@ -139,6 +206,7 @@ public class PaymentServiceImpl implements PaymentService {
         );
     }
 
+    // COMPLETE PAYMENT
     @Override
     @Transactional
     public PaymentResponse completePayment(
@@ -151,6 +219,12 @@ public class PaymentServiceImpl implements PaymentService {
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Payment completion requested for payment id: {} by user id: {}",
+                paymentId,
+                currentUser.getId()
+        );
+
         validatePaymentAccess(
                 payment,
                 currentUser
@@ -158,6 +232,11 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (payment.getPaymentStatus()
                 == PaymentStatus.COMPLETED) {
+
+            log.warn(
+                    "Payment id: {} is already completed",
+                    paymentId
+            );
 
             throw new InvalidOperationException(
                     "Payment is already completed"
@@ -167,8 +246,30 @@ public class PaymentServiceImpl implements PaymentService {
         if (payment.getPaymentStatus()
                 == PaymentStatus.REFUNDED) {
 
+            log.warn(
+                    "Refunded payment id: {} cannot be completed",
+                    paymentId
+            );
+
             throw new InvalidOperationException(
                     "Refunded payment cannot be completed"
+            );
+        }
+
+        Booking booking =
+                payment.getBooking();
+
+        if (booking.getBookingStatus()
+                == BookingStatus.CANCELLED) {
+
+            log.warn(
+                    "Payment id: {} cannot be completed because booking id: {} is cancelled",
+                    paymentId,
+                    booking.getId()
+            );
+
+            throw new InvalidOperationException(
+                    "Payment cannot be completed for a cancelled booking"
             );
         }
 
@@ -187,6 +288,11 @@ public class PaymentServiceImpl implements PaymentService {
         Payment savedPayment =
                 paymentRepository.save(payment);
 
+        log.info(
+                "Payment completed successfully with id: {}",
+                savedPayment.getId()
+        );
+
         notificationService.createNotification(
                 savedPayment.getBooking().getUser(),
                 savedPayment.getBooking().getEvent(),
@@ -202,6 +308,7 @@ public class PaymentServiceImpl implements PaymentService {
         );
     }
 
+    // REFUND PAYMENT
     @Override
     @Transactional
     public PaymentResponse refundPayment(
@@ -214,6 +321,12 @@ public class PaymentServiceImpl implements PaymentService {
         User currentUser =
                 authenticatedUserService.getCurrentUser();
 
+        log.info(
+                "Payment refund requested for payment id: {} by user id: {}",
+                paymentId,
+                currentUser.getId()
+        );
+
         validatePaymentAccess(
                 payment,
                 currentUser
@@ -222,6 +335,11 @@ public class PaymentServiceImpl implements PaymentService {
         if (payment.getPaymentStatus()
                 == PaymentStatus.REFUNDED) {
 
+            log.warn(
+                    "Payment id: {} is already refunded",
+                    paymentId
+            );
+
             throw new InvalidOperationException(
                     "Payment is already refunded"
             );
@@ -229,6 +347,12 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (payment.getPaymentStatus()
                 != PaymentStatus.COMPLETED) {
+
+            log.warn(
+                    "Payment id: {} cannot be refunded because current status is: {}",
+                    paymentId,
+                    payment.getPaymentStatus()
+            );
 
             throw new InvalidOperationException(
                     "Only completed payments can be refunded"
@@ -241,6 +365,11 @@ public class PaymentServiceImpl implements PaymentService {
 
         Payment savedPayment =
                 paymentRepository.save(payment);
+
+        log.info(
+                "Payment refunded successfully with id: {}",
+                savedPayment.getId()
+        );
 
         notificationService.createNotification(
                 savedPayment.getBooking().getUser(),
@@ -257,7 +386,9 @@ public class PaymentServiceImpl implements PaymentService {
         );
     }
 
+    // --------------------------------
     // PRIVATE HELPER METHODS
+    // --------------------------------
 
     private Payment findPayment(
             Long paymentId
@@ -265,17 +396,36 @@ public class PaymentServiceImpl implements PaymentService {
 
         return paymentRepository
                 .findById(paymentId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Payment not found with id: "
-                                        + paymentId
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Payment not found with id: {}",
+                            paymentId
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Payment not found with id: "
+                                    + paymentId
+                    );
+                });
     }
 
     private BigDecimal calculateAmount(
             Booking booking
     ) {
+
+        if (booking.getBookingSeats() == null
+                || booking.getBookingSeats().isEmpty()) {
+
+            log.warn(
+                    "Payment amount calculation failed because booking id: {} has no seats",
+                    booking.getId()
+            );
+
+            throw new InvalidOperationException(
+                    "Payment cannot be created because booking has no seats"
+            );
+        }
 
         return booking.getBookingSeats()
                 .stream()
@@ -308,6 +458,12 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (!isAdmin && !isOwner) {
 
+            log.warn(
+                    "Unauthorized payment creation attempt. Booking id: {}, user id: {}",
+                    booking.getId(),
+                    currentUser.getId()
+            );
+
             throw new InvalidOperationException(
                     "You are not allowed to make a payment for this booking"
             );
@@ -332,6 +488,12 @@ public class PaymentServiceImpl implements PaymentService {
                         );
 
         if (!isAdmin && !isOwner) {
+
+            log.warn(
+                    "Unauthorized payment access attempt. Payment id: {}, user id: {}",
+                    payment.getId(),
+                    currentUser.getId()
+            );
 
             throw new InvalidOperationException(
                     "You are not allowed to access or modify this payment"

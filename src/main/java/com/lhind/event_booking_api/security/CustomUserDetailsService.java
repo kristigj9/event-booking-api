@@ -8,7 +8,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CustomUserDetailsService implements UserDetailsService {
+public class CustomUserDetailsService
+        implements UserDetailsService {
 
     private final UserRepository userRepository;
 
@@ -19,20 +20,30 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email)
-            throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(
+            String email
+    ) throws UsernameNotFoundException {
 
-        User user = userRepository.findByEmail(email)//Ketu behet lidhje e user me mail sepse autentikimi behet me mail
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(
-                                "User not found with email: " + email
-                        )
-                );
+        User user =
+                userRepository
+                        .findByEmail(email)
+                        .orElseThrow(() ->
+                                new UsernameNotFoundException(
+                                        "User not found with email: "
+                                                + email
+                                )
+                        );
 
         return org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPassword())
-                .roles(user.getRole().name())
+                .withUsername(
+                        user.getEmail()
+                )
+                .password(
+                        user.getPassword()
+                )
+                .roles(
+                        user.getRole().name()
+                )
                 .build();
     }
 }

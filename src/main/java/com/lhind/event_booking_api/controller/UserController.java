@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -84,7 +83,9 @@ public class UserController {
     ) {
 
         return ResponseEntity.ok(
-                userService.updateCurrentUser(request)
+                userService.updateCurrentUser(
+                        request
+                )
         );
     }
 
@@ -111,9 +112,13 @@ public class UserController {
             @Valid @RequestBody ChangePasswordRequest request
     ) {
 
-        userService.changePassword(request);
+        userService.changePassword(
+                request
+        );
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity
+                .noContent()
+                .build();
     }
 
     // ADMIN
@@ -172,7 +177,9 @@ public class UserController {
     ) {
 
         return ResponseEntity.ok(
-                userService.getUserById(id)
+                userService.getUserById(
+                        id
+                )
         );
     }
 
@@ -203,10 +210,12 @@ public class UserController {
             @PathVariable Long id
     ) {
 
-        userService.deleteUser(id);
+        userService.deleteUser(
+                id
+        );
 
         return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
+                .noContent()
                 .build();
     }
 

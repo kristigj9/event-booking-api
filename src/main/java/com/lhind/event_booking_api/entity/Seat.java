@@ -12,7 +12,11 @@ import java.util.List;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uk_seat_venue_row_number",
-                        columnNames = {"venue_id", "seat_row", "seat_number"}
+                        columnNames = {
+                                "venue_id",
+                                "seat_row",
+                                "seat_number"
+                        }
                 )
         }
 )
@@ -27,18 +31,27 @@ public class Seat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "seat_row", nullable = false)
+    @Column(
+            name = "seat_row",
+            nullable = false
+    )
     private String rowNumber;
 
-    @Column(name = "seat_number", nullable = false)
+    @Column(
+            name = "seat_number",
+            nullable = false
+    )
     private Integer seatNumber;
 
-    //Lidhja e disa Seat me nje Venue
+    // Nje venue mund te kete disa seats
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "venue_id", nullable = false)
+    @JoinColumn(
+            name = "venue_id",
+            nullable = false
+    )
     private Venue venue;
 
-    //Lidhja e nje Seat me disa EventSeat
+    // Nje seat mund te perdoret ne disa event seats
     @OneToMany(mappedBy = "seat")
     @Builder.Default
     private List<EventSeat> eventSeats = new ArrayList<>();

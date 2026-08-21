@@ -11,7 +11,10 @@ import java.time.LocalDateTime;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uk_waitlist_user_event",
-                        columnNames = {"user_id", "event_id"}
+                        columnNames = {
+                                "user_id",
+                                "event_id"
+                        }
                 )
         }
 )
@@ -31,7 +34,10 @@ public class Waitlist {
     private Integer requestedSeats;
 
     // Data kur user-i futet ne waitlist
-    @Column(nullable = false, updatable = false)
+    @Column(
+            nullable = false,
+            updatable = false
+    )
     private LocalDateTime createdAt;
 
     // Statusi aktual i waitlist
@@ -42,17 +48,29 @@ public class Waitlist {
 
     // Nje user mund te kete waitlist entries per evente te ndryshme
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(
+            name = "user_id",
+            nullable = false
+    )
     private User user;
 
-    // Nje event mund te kete shume user ne waitlist
+    // Nje event mund te kete disa users ne waitlist
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
+    @JoinColumn(
+            name = "event_id",
+            nullable = false
+    )
     private Event event;
 
     @PrePersist
     public void prePersist() {
+
         if (this.createdAt == null) {
             this.createdAt = LocalDateTime.now();
-        }    }
+        }
+
+        if (this.status == null) {
+            this.status = WaitlistStatus.WAITING;
+        }
+    }
 }

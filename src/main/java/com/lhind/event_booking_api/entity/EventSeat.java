@@ -1,6 +1,8 @@
 package com.lhind.event_booking_api.entity;
+
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +13,10 @@ import java.util.List;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uk_event_seat",
-                        columnNames = {"event_id", "seat_id"}
+                        columnNames = {
+                                "event_id",
+                                "seat_id"
+                        }
                 )
         }
 )
@@ -26,14 +31,20 @@ public class EventSeat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //Lidhje e disa eventSeat me nje event
+    // Nje event mund te kete disa event seats
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
+    @JoinColumn(
+            name = "event_id",
+            nullable = false
+    )
     private Event event;
 
-    //Lidhja e disa eventSeat me nje Seat fizik
+    // Nje seat fizik mund te perdoret ne disa event seats
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seat_id", nullable = false)
+    @JoinColumn(
+            name = "seat_id",
+            nullable = false
+    )
     private Seat seat;
 
     @Enumerated(EnumType.STRING)
@@ -41,10 +52,14 @@ public class EventSeat {
     @Builder.Default
     private StatusSeat statusSeat = StatusSeat.AVAILABLE;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(
+            nullable = false,
+            precision = 10,
+            scale = 2
+    )
     private BigDecimal priceSeat;
 
-    //Lidhja e EventSeat me BookingSeat
+    // Nje event seat mund te lidhet me disa booking seats
     @OneToMany(mappedBy = "eventSeat")
     @Builder.Default
     private List<BookingSeat> bookingSeats = new ArrayList<>();

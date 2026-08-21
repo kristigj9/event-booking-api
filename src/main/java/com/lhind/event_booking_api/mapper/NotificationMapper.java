@@ -2,15 +2,26 @@ package com.lhind.event_booking_api.mapper;
 
 import com.lhind.event_booking_api.dto.notification.NotificationResponse;
 import com.lhind.event_booking_api.dto.reference.BookingResponseShort;
-import com.lhind.event_booking_api.dto.reference.EventResponseShort;
-import com.lhind.event_booking_api.dto.reference.UserResponseShort;
+import com.lhind.event_booking_api.entity.Booking;
 import com.lhind.event_booking_api.entity.Notification;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 
 @Component
 public class NotificationMapper {
+
+    private final UserMapper userMapper;
+    private final EventMapper eventMapper;
+
+    public NotificationMapper(
+            UserMapper userMapper,
+            EventMapper eventMapper
+    ) {
+        this.userMapper = userMapper;
+        this.eventMapper = eventMapper;
+    }
 
     public NotificationResponse toResponse(
             Notification notification
@@ -18,42 +29,6 @@ public class NotificationMapper {
 
         if (notification == null) {
             return null;
-        }
-
-        UserResponseShort userResponse = null;
-
-        if (notification.getUser() != null) {
-            userResponse = UserResponseShort.builder()
-                    .id(notification.getUser().getId())
-                    .firstName(notification.getUser().getFirstName())
-                    .lastName(notification.getUser().getLastName())
-                    .email(notification.getUser().getEmail())
-                    .build();
-        }
-
-        EventResponseShort eventResponse = null;
-
-        if (notification.getEvent() != null) {
-            eventResponse = EventResponseShort.builder()
-                    .id(notification.getEvent().getId())
-                    .eventName(notification.getEvent().getEventName())
-                    .eventStartDateTime(
-                            notification.getEvent()
-                                    .getEventStartDateTime()
-                    )
-                    .build();
-        }
-
-        BookingResponseShort bookingResponse = null;
-
-        if (notification.getBooking() != null) {
-            bookingResponse = BookingResponseShort.builder()
-                    .id(notification.getBooking().getId())
-                    .status(
-                            notification.getBooking()
-                                    .getBookingStatus()
-                    )
-                    .build();
         }
 
         return NotificationResponse.builder()
@@ -67,9 +42,21 @@ public class NotificationMapper {
                 .message(notification.getMessage())
                 .createdAt(notification.getCreatedAt())
                 .readAt(notification.getReadAt())
-                .user(userResponse)
-                .event(eventResponse)
-                .booking(bookingResponse)
+                .user(
+                        userMapper.toShortResponse(
+                                notification.getUser()
+                        )
+                )
+                .event(
+                        eventMapper.toShortResponse(
+                                notification.getEvent()
+                        )
+                )
+                .booking(
+                        toBookingResponseShort(
+                                notification.getBooking()
+                        )
+                )
                 .build();
     }
 
@@ -77,8 +64,28 @@ public class NotificationMapper {
             List<Notification> notifications
     ) {
 
+        if (notifications == null) {
+            return Collections.emptyList();
+        }
+
         return notifications.stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    private BookingResponseShort toBookingResponseShort(
+            Booking booking
+    ) {
+
+        if (booking == null) {
+            return null;
+        }
+
+        return BookingResponseShort.builder()
+                .id(booking.getId())
+                .status(
+                        booking.getBookingStatus()
+                )
+                .build();
     }
 }

@@ -9,7 +9,10 @@ import lombok.Setter;
 @Setter
 public class WaitlistRequest {
 
-    @NotNull
-    @Min(value = 1, message = "Requested seats must be at least 1")
+    @NotNull(message = "Requested seats is required")
+    @Min(
+            value = 1,
+            message = "Requested seats must be at least 1"
+    )
     private Integer requestedSeats;
 }

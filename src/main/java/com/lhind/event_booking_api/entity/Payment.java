@@ -19,7 +19,11 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(
+            nullable = false,
+            precision = 10,
+            scale = 2
+    )
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
@@ -28,14 +32,20 @@ public class Payment {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PaymentStatus paymentStatus;
+    @Builder.Default
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
     @Column(unique = true)
     private String transactionId;
 
     private LocalDateTime paymentDate;
 
+    // Nje booking ka vetem nje payment
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id", nullable = false, unique = true)
+    @JoinColumn(
+            name = "booking_id",
+            nullable = false,
+            unique = true
+    )
     private Booking booking;
 }

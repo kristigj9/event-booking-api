@@ -7,18 +7,26 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Setter
 public class EventRequest {
+
     @NotBlank(message = "Event name is required")
-    @Size(min = 2, max = 150,
-            message = "Event name must be between 2 and 150 characters")
+    @Size(
+            min = 2,
+            max = 150,
+            message = "Event name must be between 2 and 150 characters"
+    )
     private String eventName;
-    @Size(max = 1000,
-            message = "Event description must not exceed 1000 characters")
+
+    @Size(
+            max = 1000,
+            message = "Event description must not exceed 1000 characters"
+    )
     private String eventDescription;
 
     @NotNull(message = "Event start date and time is required")
@@ -36,11 +44,11 @@ public class EventRequest {
     @NotNull(message = "Event status is required")
     private EventStatus eventStatus;
 
-
     @Valid
     @NotNull(message = "Venue is required")
     private VenueReferenceRequest venue;
 
     @Valid
     @NotEmpty(message = "At least one category is required")
-    private List<CategoryReferenceRequest> categories;}
+    private List<CategoryReferenceRequest> categories;
+}

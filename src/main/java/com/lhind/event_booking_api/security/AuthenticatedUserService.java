@@ -3,6 +3,7 @@ package com.lhind.event_booking_api.security;
 import com.lhind.event_booking_api.entity.User;
 import com.lhind.event_booking_api.exception.ResourceNotFoundException;
 import com.lhind.event_booking_api.repository.UserRepository;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -21,11 +22,25 @@ public class AuthenticatedUserService {
     public User getCurrentUser() {
 
         Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
 
-        String email = authentication.getName();
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication
+                instanceof AnonymousAuthenticationToken) {
 
-        return userRepository.findByEmail(email)
+            throw new ResourceNotFoundException(
+                    "Authenticated user not found"
+            );
+        }
+
+        String email =
+                authentication.getName();
+
+        return userRepository
+                .findByEmail(email)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Authenticated user not found"

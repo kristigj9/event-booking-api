@@ -34,7 +34,7 @@ public class BookingController {
     // USER / ORGANIZER / ADMIN
     @Operation(
             summary = "Create booking",
-            description = "Creates a booking for the currently authenticated user"
+            description = "Creates a booking for the currently authenticated user. The event must be PUBLISHED and must not have started"
     )
     @ApiResponses({
             @ApiResponse(
@@ -43,7 +43,7 @@ public class BookingController {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid booking data, duplicate seats or seats are not available"
+                    description = "Invalid booking data, invalid event state, duplicate seats or unavailable seats"
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -60,7 +60,9 @@ public class BookingController {
     ) {
 
         BookingResponse response =
-                bookingService.createBooking(request);
+                bookingService.createBooking(
+                        request
+                );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -96,7 +98,9 @@ public class BookingController {
     ) {
 
         return ResponseEntity.ok(
-                bookingService.getBookingById(bookingId)
+                bookingService.getBookingById(
+                        bookingId
+                )
         );
     }
 
@@ -148,7 +152,9 @@ public class BookingController {
     ) {
 
         return ResponseEntity.ok(
-                bookingService.getMyBookingsByStatus(status)
+                bookingService.getMyBookingsByStatus(
+                        status
+                )
         );
     }
 
@@ -181,14 +187,16 @@ public class BookingController {
     ) {
 
         return ResponseEntity.ok(
-                bookingService.getBookingsByEvent(eventId)
+                bookingService.getBookingsByEvent(
+                        eventId
+                )
         );
     }
 
     // ORGANIZER OWNER / ADMIN
     @Operation(
             summary = "Confirm booking",
-            description = "Confirms a pending booking. Accessible by the event organizer or ADMIN"
+            description = "Confirms a PENDING booking and changes its reserved event seats to SOLD. Accessible by the event organizer or ADMIN"
     )
     @ApiResponses({
             @ApiResponse(
@@ -218,14 +226,16 @@ public class BookingController {
     ) {
 
         return ResponseEntity.ok(
-                bookingService.confirmBooking(bookingId)
+                bookingService.confirmBooking(
+                        bookingId
+                )
         );
     }
 
     // USER OWNER / ADMIN
     @Operation(
             summary = "Cancel booking",
-            description = "Cancels a booking. Accessible by the booking owner or ADMIN"
+            description = "Cancels a PENDING or CONFIRMED booking and releases its seats. COMPLETED bookings cannot be cancelled. Accessible by the booking owner or ADMIN"
     )
     @ApiResponses({
             @ApiResponse(
@@ -255,14 +265,16 @@ public class BookingController {
     ) {
 
         return ResponseEntity.ok(
-                bookingService.cancelBooking(bookingId)
+                bookingService.cancelBooking(
+                        bookingId
+                )
         );
     }
 
     // ORGANIZER OWNER / ADMIN
     @Operation(
             summary = "Complete booking",
-            description = "Marks a confirmed booking as completed. Accessible by the event organizer or ADMIN"
+            description = "Marks a CONFIRMED booking as COMPLETED. Accessible by the event organizer or ADMIN"
     )
     @ApiResponses({
             @ApiResponse(
@@ -292,7 +304,9 @@ public class BookingController {
     ) {
 
         return ResponseEntity.ok(
-                bookingService.completeBooking(bookingId)
+                bookingService.completeBooking(
+                        bookingId
+                )
         );
     }
 }

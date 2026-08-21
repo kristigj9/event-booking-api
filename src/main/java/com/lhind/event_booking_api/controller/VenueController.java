@@ -51,6 +51,10 @@ public class VenueController {
             @ApiResponse(
                     responseCode = "403",
                     description = "Access denied"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Venue already exists"
             )
     })
     @PostMapping
@@ -104,7 +108,9 @@ public class VenueController {
     ) {
 
         return ResponseEntity.ok(
-                venueService.getVenueById(id)
+                venueService.getVenueById(
+                        id
+                )
         );
     }
 
@@ -133,6 +139,10 @@ public class VenueController {
             @ApiResponse(
                     responseCode = "404",
                     description = "Venue not found"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Venue already exists"
             )
     })
     @PutMapping("/{id}")
@@ -160,6 +170,10 @@ public class VenueController {
                     description = "Venue deleted successfully"
             ),
             @ApiResponse(
+                    responseCode = "400",
+                    description = "Venue cannot be deleted because it is in use"
+            ),
+            @ApiResponse(
                     responseCode = "401",
                     description = "User is not authenticated"
             ),
@@ -177,7 +191,9 @@ public class VenueController {
             @PathVariable Long id
     ) {
 
-        venueService.deleteVenue(id);
+        venueService.deleteVenue(
+                id
+        );
 
         return ResponseEntity
                 .noContent()

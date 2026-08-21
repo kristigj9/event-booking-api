@@ -19,32 +19,48 @@ public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime bookingDate;
+
     @Column(nullable = false)
     private Integer seatsBooked;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private BookingStatus bookingStatus=BookingStatus.PENDING;//Sapo krijohet nje booking kalon ne PENDING
+    private BookingStatus bookingStatus = BookingStatus.PENDING;
 
-    //Lidhja me User Many to One, Disa Booking nga nje user
+    // Nje user mund te kete disa bookings
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(
+            name = "user_id",
+            nullable = false
+    )
     private User user;
 
-    //Lidhja disa Booking nje event
+    // Nje event mund te kete disa bookings
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
+    @JoinColumn(
+            name = "event_id",
+            nullable = false
+    )
     private Event event;
 
-    //Gjenerimi i bookingDate Automatike
+    // Gjeneron automatikisht bookingDate
     @PrePersist
     public void prePersist() {
-        this.bookingDate = LocalDateTime.now();
+
+        if (this.bookingDate == null) {
+            this.bookingDate = LocalDateTime.now();
+        }
+
+        if (this.bookingStatus == null) {
+            this.bookingStatus = BookingStatus.PENDING;
+        }
     }
 
-    //Lidhja e Booking me BookingSeat
+    // Nje booking mund te kete disa booking seats
     @OneToMany(
             mappedBy = "booking",
             cascade = CascadeType.ALL,
@@ -52,17 +68,17 @@ public class Booking {
     )
     @Builder.Default
     private List<BookingSeat> bookingSeats = new ArrayList<>();
-    //Lidhja e Booking me Payment
 
+    // Nje booking ka nje payment
     @OneToOne(
             mappedBy = "booking",
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private Payment payment;
-//Nje Booking disa Notification
-@OneToMany(mappedBy = "booking")
-@Builder.Default
-private List<Notification> notifications =
-            new ArrayList<>();
+
+    // Nje booking mund te lidhet me disa notifications
+    @OneToMany(mappedBy = "booking")
+    @Builder.Default
+    private List<Notification> notifications = new ArrayList<>();
 }

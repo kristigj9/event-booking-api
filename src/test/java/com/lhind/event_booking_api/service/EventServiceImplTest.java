@@ -101,11 +101,17 @@ class EventServiceImplTest {
                 LocalDateTime.now().plusDays(5)
         );
         request.setEventEndDateTime(
-                LocalDateTime.now().plusDays(5).plusHours(3)
+                LocalDateTime.now()
+                        .plusDays(5)
+                        .plusHours(3)
         );
         request.setEventTotalSeats(50);
-        request.setEventStatus(EventStatus.PUBLISHED);
-        request.setVenue(venueRequest);
+        request.setEventStatus(
+                EventStatus.PUBLISHED
+        );
+        request.setVenue(
+                venueRequest
+        );
         request.setCategories(
                 List.of(categoryRequest)
         );
@@ -122,20 +128,30 @@ class EventServiceImplTest {
                 )
                 .eventTotalSeats(50)
                 .eventAvailableSeats(50)
-                .eventStatus(EventStatus.PUBLISHED)
+                .eventStatus(
+                        EventStatus.PUBLISHED
+                )
                 .organizer(organizer)
                 .venue(venue)
-                .categories(List.of(category))
+                .categories(
+                        new ArrayList<>(
+                                List.of(category)
+                        )
+                )
                 .build();
 
         response = EventResponse.builder()
                 .id(1L)
                 .eventName("Music Event")
-                .eventStatus(EventStatus.PUBLISHED)
+                .eventStatus(
+                        EventStatus.PUBLISHED
+                )
                 .eventTotalSeats(50)
                 .eventAvailableSeats(50)
                 .build();
     }
+
+    // CREATE EVENT
 
     @Test
     void createEvent_shouldCreateEventSuccessfully() {
@@ -148,11 +164,15 @@ class EventServiceImplTest {
                         "Tirana Arena",
                         "Tirana"
                 ))
-                .thenReturn(Optional.of(venue));
+                .thenReturn(
+                        Optional.of(venue)
+                );
 
         when(categoryRepository
                 .findByNameCategory("Music"))
-                .thenReturn(Optional.of(category));
+                .thenReturn(
+                        Optional.of(category)
+                );
 
         when(eventMapper.toEntity(
                 request,
@@ -168,7 +188,9 @@ class EventServiceImplTest {
                 .thenReturn(response);
 
         EventResponse result =
-                eventService.createEvent(request);
+                eventService.createEvent(
+                        request
+                );
 
         assertNotNull(result);
 
@@ -182,7 +204,7 @@ class EventServiceImplTest {
                 result.getEventTotalSeats()
         );
 
-        verify(eventRepository, times(1))
+        verify(eventRepository)
                 .save(event);
     }
 
@@ -202,16 +224,21 @@ class EventServiceImplTest {
                         "Tirana Arena",
                         "Tirana"
                 ))
-                .thenReturn(Optional.of(venue));
+                .thenReturn(
+                        Optional.of(venue)
+                );
 
         when(categoryRepository
                 .findByNameCategory("Music"))
-                .thenReturn(Optional.of(category));
+                .thenReturn(
+                        Optional.of(category)
+                );
 
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> eventService.createEvent(request)
+                        () -> eventService
+                                .createEvent(request)
                 );
 
         assertEquals(
@@ -226,7 +253,9 @@ class EventServiceImplTest {
     @Test
     void createEvent_shouldThrowExceptionWhenVenueCapacityIsExceeded() {
 
-        request.setEventTotalSeats(150);
+        request.setEventTotalSeats(
+                150
+        );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(organizer);
@@ -236,16 +265,21 @@ class EventServiceImplTest {
                         "Tirana Arena",
                         "Tirana"
                 ))
-                .thenReturn(Optional.of(venue));
+                .thenReturn(
+                        Optional.of(venue)
+                );
 
         when(categoryRepository
                 .findByNameCategory("Music"))
-                .thenReturn(Optional.of(category));
+                .thenReturn(
+                        Optional.of(category)
+                );
 
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> eventService.createEvent(request)
+                        () -> eventService
+                                .createEvent(request)
                 );
 
         assertEquals(
@@ -257,48 +291,20 @@ class EventServiceImplTest {
                 .save(any(Event.class));
     }
 
-//    UPDATE EVENT TEST
-    //sipas ownership + capacity + lifecycle te statusit.
-
+    // UPDATE EVENT
 
     @Test
     void updateEvent_shouldUpdateEventSuccessfully() {
 
         EventUpdateRequest updateRequest =
-                new EventUpdateRequest();
-
-        VenueReferenceRequest venueRequest =
-                new VenueReferenceRequest();
-
-        venueRequest.setVenueName("Tirana Arena");
-        venueRequest.setVenueCity("Tirana");
-
-        CategoryReferenceRequest categoryRequest =
-                new CategoryReferenceRequest();
-
-        categoryRequest.setNameCategory("Music");
-
-        updateRequest.setEventName("Updated Music Event");
-        updateRequest.setEventDescription("Updated description");
-        updateRequest.setEventStartDateTime(
-                LocalDateTime.now().plusDays(5)
-        );
-        updateRequest.setEventEndDateTime(
-                LocalDateTime.now().plusDays(5).plusHours(3)
-        );
-        updateRequest.setEventTotalSeats(60);
-        updateRequest.setEventStatus(EventStatus.PUBLISHED);
-        updateRequest.setVenue(venueRequest);
-        updateRequest.setCategories(
-                List.of(categoryRequest)
-        );
-
-        event.setCategories(
-                new ArrayList<>(List.of(category))
-        );
+                createValidUpdateRequest(
+                        EventStatus.PUBLISHED
+                );
 
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(organizer);
@@ -308,11 +314,15 @@ class EventServiceImplTest {
                         "Tirana Arena",
                         "Tirana"
                 ))
-                .thenReturn(Optional.of(venue));
+                .thenReturn(
+                        Optional.of(venue)
+                );
 
         when(categoryRepository
                 .findByNameCategory("Music"))
-                .thenReturn(Optional.of(category));
+                .thenReturn(
+                        Optional.of(category)
+                );
 
         when(eventRepository.save(event))
                 .thenReturn(event);
@@ -328,7 +338,7 @@ class EventServiceImplTest {
 
         assertNotNull(result);
 
-        verify(eventMapper, times(1))
+        verify(eventMapper)
                 .updateEntity(
                         eq(updateRequest),
                         eq(event),
@@ -336,37 +346,43 @@ class EventServiceImplTest {
                         anyList()
                 );
 
-        verify(eventRepository, times(1))
+        verify(eventRepository)
                 .save(event);
     }
 
     @Test
     void updateEvent_shouldThrowExceptionWhenOrganizerIsNotOwner() {
 
-        User anotherOrganizer = User.builder()
-                .id(99L)
-                .firstName("Other")
-                .lastName("Organizer")
-                .email("other@test.com")
-                .role(Role.ORGANIZER)
-                .build();
+        User anotherOrganizer =
+                User.builder()
+                        .id(99L)
+                        .firstName("Other")
+                        .lastName("Organizer")
+                        .email("other@test.com")
+                        .role(Role.ORGANIZER)
+                        .build();
 
         EventUpdateRequest updateRequest =
                 new EventUpdateRequest();
 
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         when(authenticatedUserService.getCurrentUser())
-                .thenReturn(anotherOrganizer);
+                .thenReturn(
+                        anotherOrganizer
+                );
 
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> eventService.updateEvent(
-                                1L,
-                                updateRequest
-                        )
+                        () -> eventService
+                                .updateEvent(
+                                        1L,
+                                        updateRequest
+                                )
                 );
 
         assertEquals(
@@ -376,10 +392,7 @@ class EventServiceImplTest {
 
         verify(eventRepository, never())
                 .save(any(Event.class));
-
-
     }
-    //Tani lifecycle DRAFT -> PUBLISHED
 
     @Test
     void updateEvent_shouldAllowDraftToPublishedTransition() {
@@ -393,12 +406,10 @@ class EventServiceImplTest {
                         EventStatus.PUBLISHED
                 );
 
-        event.setCategories(
-                new ArrayList<>(List.of(category))
-        );
-
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(organizer);
@@ -408,11 +419,15 @@ class EventServiceImplTest {
                         "Tirana Arena",
                         "Tirana"
                 ))
-                .thenReturn(Optional.of(venue));
+                .thenReturn(
+                        Optional.of(venue)
+                );
 
         when(categoryRepository
                 .findByNameCategory("Music"))
-                .thenReturn(Optional.of(category));
+                .thenReturn(
+                        Optional.of(category)
+                );
 
         when(eventRepository.save(event))
                 .thenReturn(event);
@@ -428,11 +443,9 @@ class EventServiceImplTest {
 
         assertNotNull(result);
 
-        verify(eventRepository, times(1))
+        verify(eventRepository)
                 .save(event);
     }
-
-    //COMPLETED -> PUBLISHED bllokohet
 
     @Test
     void updateEvent_shouldThrowExceptionWhenCompletedEventStatusChanges() {
@@ -447,7 +460,9 @@ class EventServiceImplTest {
                 );
 
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(organizer);
@@ -457,19 +472,24 @@ class EventServiceImplTest {
                         "Tirana Arena",
                         "Tirana"
                 ))
-                .thenReturn(Optional.of(venue));
+                .thenReturn(
+                        Optional.of(venue)
+                );
 
         when(categoryRepository
                 .findByNameCategory("Music"))
-                .thenReturn(Optional.of(category));
+                .thenReturn(
+                        Optional.of(category)
+                );
 
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> eventService.updateEvent(
-                                1L,
-                                updateRequest
-                        )
+                        () -> eventService
+                                .updateEvent(
+                                        1L,
+                                        updateRequest
+                                )
                 );
 
         assertEquals(
@@ -478,83 +498,64 @@ class EventServiceImplTest {
         );
     }
 
-    private EventUpdateRequest createValidUpdateRequest(
-            EventStatus status
-    ) {
 
-        VenueReferenceRequest venueRequest =
-                new VenueReferenceRequest();
+    // DELETE EVENT
 
-        venueRequest.setVenueName("Tirana Arena");
-        venueRequest.setVenueCity("Tirana");
+    @Test
+    void deleteEvent_shouldDeleteEventSuccessfully() {
 
-        CategoryReferenceRequest categoryRequest =
-                new CategoryReferenceRequest();
-
-        categoryRequest.setNameCategory("Music");
-
-        EventUpdateRequest request =
-                new EventUpdateRequest();
-
-        request.setEventName("Updated Event");
-        request.setEventDescription("Updated description");
-
-        request.setEventStartDateTime(
-                LocalDateTime.now().plusDays(2)
+        // Vetem DRAFT ose CANCELLED mund te fshihen
+        event.setEventStatus(
+                EventStatus.DRAFT
         );
 
-        request.setEventEndDateTime(
-                LocalDateTime.now().plusDays(2).plusHours(3)
+        when(eventRepository.findById(1L))
+                .thenReturn(
+                        Optional.of(event)
+                );
+
+        when(authenticatedUserService.getCurrentUser())
+                .thenReturn(organizer);
+
+        eventService.deleteEvent(
+                1L
         );
 
-        request.setEventTotalSeats(50);
-        request.setEventStatus(status);
-        request.setVenue(venueRequest);
-        request.setCategories(
-                List.of(categoryRequest)
-        );
-
-        return request;
+        verify(eventRepository)
+                .delete(event);
     }
-
-//    DELETE EVENT
-@Test
-void deleteEvent_shouldDeleteEventSuccessfully() {
-
-    when(eventRepository.findById(1L))
-            .thenReturn(Optional.of(event));
-
-    when(authenticatedUserService.getCurrentUser())
-            .thenReturn(organizer);
-
-    eventService.deleteEvent(1L);
-
-    verify(eventRepository, times(1))
-            .delete(event);
-}
-//ORGANIZER  nuk eshte OWNER
 
     @Test
     void deleteEvent_shouldThrowExceptionWhenOrganizerIsNotOwner() {
 
-        User anotherOrganizer = User.builder()
-                .id(99L)
-                .firstName("Other")
-                .lastName("Organizer")
-                .email("other@test.com")
-                .role(Role.ORGANIZER)
-                .build();
+        User anotherOrganizer =
+                User.builder()
+                        .id(99L)
+                        .firstName("Other")
+                        .lastName("Organizer")
+                        .email("other@test.com")
+                        .role(Role.ORGANIZER)
+                        .build();
+
+        event.setEventStatus(
+                EventStatus.DRAFT
+        );
 
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         when(authenticatedUserService.getCurrentUser())
-                .thenReturn(anotherOrganizer);
+                .thenReturn(
+                        anotherOrganizer
+                );
 
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> eventService.deleteEvent(1L)
+                        () -> eventService
+                                .deleteEvent(1L)
                 );
 
         assertEquals(
@@ -564,44 +565,81 @@ void deleteEvent_shouldDeleteEventSuccessfully() {
 
         verify(eventRepository, never())
                 .delete(any(Event.class));
-
-
     }
 
-    //        GET EVENT BY ID
+    @Test
+    void deleteEvent_shouldThrowExceptionWhenEventIsPublished() {
+
+        event.setEventStatus(
+                EventStatus.PUBLISHED
+        );
+
+        when(eventRepository.findById(1L))
+                .thenReturn(
+                        Optional.of(event)
+                );
+
+        when(authenticatedUserService.getCurrentUser())
+                .thenReturn(organizer);
+
+        InvalidOperationException exception =
+                assertThrows(
+                        InvalidOperationException.class,
+                        () -> eventService
+                                .deleteEvent(1L)
+                );
+
+        assertEquals(
+                "Only draft or cancelled events can be deleted",
+                exception.getMessage()
+        );
+
+        verify(eventRepository, never())
+                .delete(any(Event.class));
+    }
+
+    // GET EVENT
 
     @Test
     void getEventById_shouldReturnEventSuccessfully() {
 
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         when(eventMapper.toResponse(event))
                 .thenReturn(response);
 
         EventResponse result =
-                eventService.getEventById(1L);
+                eventService.getEventById(
+                        1L
+                );
 
         assertNotNull(result);
-        assertEquals(response, result);
 
-        verify(eventRepository, times(1))
+        assertEquals(
+                response,
+                result
+        );
 
+        verify(eventRepository)
                 .findById(1L);
     }
-
-    //Event not found:
 
     @Test
     void getEventById_shouldThrowExceptionWhenEventNotFound() {
 
         when(eventRepository.findById(99L))
-                .thenReturn(Optional.empty());
+                .thenReturn(
+                        Optional.empty()
+                );
 
         ResourceNotFoundException exception =
                 assertThrows(
                         ResourceNotFoundException.class,
-                        () -> eventService.getEventById(99L)
+                        () -> eventService
+                                .getEventById(99L)
                 );
 
         assertEquals(
@@ -609,8 +647,6 @@ void deleteEvent_shouldDeleteEventSuccessfully() {
                 exception.getMessage()
         );
     }
-
-//    GET ALL EVENTS
 
     @Test
     void getAllEvents_shouldReturnAllEvents() {
@@ -631,14 +667,21 @@ void deleteEvent_shouldDeleteEventSuccessfully() {
                 eventService.getAllEvents();
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+
+        assertEquals(
+                1,
+                result.size()
+        );
     }
 
     @Test
     void getEventsByOrganizer_shouldReturnEvents() {
 
-        List<Event> events = List.of(event);
-        List<EventResponse> responses = List.of(response);
+        List<Event> events =
+                List.of(event);
+
+        List<EventResponse> responses =
+                List.of(response);
 
         when(eventRepository.findByOrganizerId(1L))
                 .thenReturn(events);
@@ -647,16 +690,24 @@ void deleteEvent_shouldDeleteEventSuccessfully() {
                 .thenReturn(responses);
 
         List<EventResponse> result =
-                eventService.getEventsByOrganizer(1L);
+                eventService.getEventsByOrganizer(
+                        1L
+                );
 
-        assertEquals(1, result.size());
+        assertEquals(
+                1,
+                result.size()
+        );
     }
 
     @Test
     void getEventsByStatus_shouldReturnEvents() {
 
-        List<Event> events = List.of(event);
-        List<EventResponse> responses = List.of(response);
+        List<Event> events =
+                List.of(event);
+
+        List<EventResponse> responses =
+                List.of(response);
 
         when(eventRepository.findByEventStatus(
                 EventStatus.PUBLISHED
@@ -670,14 +721,20 @@ void deleteEvent_shouldDeleteEventSuccessfully() {
                         EventStatus.PUBLISHED
                 );
 
-        assertEquals(1, result.size());
+        assertEquals(
+                1,
+                result.size()
+        );
     }
 
     @Test
     void getEventsByCategory_shouldReturnEvents() {
 
-        List<Event> events = List.of(event);
-        List<EventResponse> responses = List.of(response);
+        List<Event> events =
+                List.of(event);
+
+        List<EventResponse> responses =
+                List.of(response);
 
         when(eventRepository.findByCategoriesId(1L))
                 .thenReturn(events);
@@ -686,16 +743,24 @@ void deleteEvent_shouldDeleteEventSuccessfully() {
                 .thenReturn(responses);
 
         List<EventResponse> result =
-                eventService.getEventsByCategory(1L);
+                eventService.getEventsByCategory(
+                        1L
+                );
 
-        assertEquals(1, result.size());
+        assertEquals(
+                1,
+                result.size()
+        );
     }
 
     @Test
     void getEventsByVenue_shouldReturnEvents() {
 
-        List<Event> events = List.of(event);
-        List<EventResponse> responses = List.of(response);
+        List<Event> events =
+                List.of(event);
+
+        List<EventResponse> responses =
+                List.of(response);
 
         when(eventRepository.findByVenueId(1L))
                 .thenReturn(events);
@@ -704,8 +769,78 @@ void deleteEvent_shouldDeleteEventSuccessfully() {
                 .thenReturn(responses);
 
         List<EventResponse> result =
-                eventService.getEventsByVenue(1L);
+                eventService.getEventsByVenue(
+                        1L
+                );
 
-        assertEquals(1, result.size());
+        assertEquals(
+                1,
+                result.size()
+        );
+    }
+
+    // HELPER METHOD
+
+    private EventUpdateRequest createValidUpdateRequest(
+            EventStatus status
+    ) {
+
+        VenueReferenceRequest venueRequest =
+                new VenueReferenceRequest();
+
+        venueRequest.setVenueName(
+                "Tirana Arena"
+        );
+
+        venueRequest.setVenueCity(
+                "Tirana"
+        );
+
+        CategoryReferenceRequest categoryRequest =
+                new CategoryReferenceRequest();
+
+        categoryRequest.setNameCategory(
+                "Music"
+        );
+
+        EventUpdateRequest updateRequest =
+                new EventUpdateRequest();
+
+        updateRequest.setEventName(
+                "Updated Event"
+        );
+
+        updateRequest.setEventDescription(
+                "Updated description"
+        );
+
+        updateRequest.setEventStartDateTime(
+                LocalDateTime.now()
+                        .plusDays(2)
+        );
+
+        updateRequest.setEventEndDateTime(
+                LocalDateTime.now()
+                        .plusDays(2)
+                        .plusHours(3)
+        );
+
+        updateRequest.setEventTotalSeats(
+                50
+        );
+
+        updateRequest.setEventStatus(
+                status
+        );
+
+        updateRequest.setVenue(
+                venueRequest
+        );
+
+        updateRequest.setCategories(
+                List.of(categoryRequest)
+        );
+
+        return updateRequest;
     }
 }

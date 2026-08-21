@@ -6,6 +6,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,47 +17,65 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            CustomAuthenticationEntryPoint authenticationEntryPoint,
+            CustomAccessDeniedHandler accessDeniedHandler
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
-    // Password Encoder
+    // PASSWORD ENCODER
     @Bean
     public PasswordEncoder passwordEncoder() {
+
         return new BCryptPasswordEncoder();
     }
 
-    // Authentication Manager
+    // AUTHENTICATION MANAGER
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration
-    ) throws Exception {
+    ) {
 
         return configuration.getAuthenticationManager();
     }
 
-    // Security Configuration
+    // SECURITY CONFIGURATION
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http
     ) throws Exception {
 
         http
+                // JWT API nuk perdor CSRF token
+                .csrf(AbstractHttpConfigurer::disable)
 
-                // JWT API -> nuk perdorim CSRF token
-                .csrf(csrf -> csrf.disable())
-
-                // JWT -> nuk perdorim session
+                // JWT API nuk perdor session
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
 
+                // 401 / 403 custom JSON response
+                .exceptionHandling(exception ->
+                        exception
+                                .authenticationEntryPoint(
+                                        authenticationEntryPoint
+                                )
+                                .accessDeniedHandler(
+                                        accessDeniedHandler
+                                )
+                )
+
                 .authorizeHttpRequests(auth -> auth
+
                         // SWAGGER / OPENAPI - PUBLIC
 
                         .requestMatchers(
@@ -68,20 +87,18 @@ public class SecurityConfig {
                         // AUTH - PUBLIC
 
                         .requestMatchers(
-                                "/api/auth/register",
-                                "/api/auth/login"
+                                "/api/auth/**"
                         ).permitAll()
-
 
                         // EVENTS
 
-                        // PUBLIC - shikon eventet
+                        // PUBLIC
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/events/**"
                         ).permitAll()
 
-                        // ORGANIZER / ADMIN - krijon event
+                        // ORGANIZER / ADMIN
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/events"
@@ -91,74 +108,43 @@ public class SecurityConfig {
                         )
 
                         // ORGANIZER owner / ADMIN
+                        // Ownership kontrollohet  Service
                         .requestMatchers(
                                 HttpMethod.PUT,
-                                "/api/events/*"
+                                "/api/events/**"
                         ).hasAnyRole(
                                 "ORGANIZER",
                                 "ADMIN"
                         )
 
                         // ORGANIZER owner / ADMIN
+                        // Ownership kontrollohet Service
                         .requestMatchers(
                                 HttpMethod.DELETE,
-                                "/api/events/*"
+                                "/api/events/**"
                         ).hasAnyRole(
                                 "ORGANIZER",
                                 "ADMIN"
                         )
 
+                        // USERS - CURRENT USER
 
-                        // CURRENT USER
                         // USER / ORGANIZER / ADMIN
-
-                        // Profili personal
                         .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/users/me"
+                                "/api/users/me",
+                                "/api/users/me/**"
                         ).authenticated()
 
-                        // Update i profilit personal
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/users/me"
-                        ).authenticated()
-
-                        // Ndryshimi i password-it
-                        .requestMatchers(
-                                HttpMethod.PATCH,
-                                "/api/users/me/password"
-                        ).authenticated()
-
-
-                        // ADMIN - USER MANAGEMENT
-
-                        // Merr te gjithe users
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/users"
-                        ).hasRole("ADMIN")
+                        // USERS - ADMIN
+                        //
 
                         .requestMatchers(
-                                HttpMethod.PATCH,
-                                "/api/users/*/role"
-                        ).hasRole("ADMIN")
-
-
-                        // Merr nje user sipas ID
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/users/*"
-                        ).hasRole("ADMIN")
-
-                        // Fshin user
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/api/users/*"
+                                "/api/users/**"
                         ).hasRole("ADMIN")
 
 
                         // VENUES
+
 
                         // PUBLIC - vetem lexim
                         .requestMatchers(
@@ -166,19 +152,17 @@ public class SecurityConfig {
                                 "/api/venues/**"
                         ).permitAll()
 
-                        // ADMIN - krijon venue
+                        // ADMIN
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/venues/**"
                         ).hasRole("ADMIN")
 
-                        // ADMIN - perditeson venue
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/venues/**"
                         ).hasRole("ADMIN")
 
-                        // ADMIN - fshin venue
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/venues/**"
@@ -187,30 +171,28 @@ public class SecurityConfig {
 
                         // CATEGORIES
 
+
                         // PUBLIC - vetem lexim
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/categories/**"
                         ).permitAll()
 
-                        // ADMIN - krijon category
+                        // ADMIN
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/categories/**"
                         ).hasRole("ADMIN")
 
-                        // ADMIN - perditeson category
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/categories/**"
                         ).hasRole("ADMIN")
 
-                        // ADMIN - fshin category
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/categories/**"
                         ).hasRole("ADMIN")
-
 
                         // SEATS
 
@@ -220,35 +202,31 @@ public class SecurityConfig {
                                 "/api/seats/**"
                         ).permitAll()
 
-                        // ADMIN - krijon seat
+                        // ADMIN
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/seats/**"
                         ).hasRole("ADMIN")
 
-                        // ADMIN - perditeson seat
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/seats/**"
                         ).hasRole("ADMIN")
 
-                        // ADMIN - fshin seat
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/seats/**"
                         ).hasRole("ADMIN")
 
-
                         // EVENT SEATS
 
-                        // PUBLIC - shikon seat-et e eventit
+                        // PUBLIC - vetem lexim
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/event-seats/**"
                         ).permitAll()
 
                         // ORGANIZER owner / ADMIN
-                        // Krijon EventSeat
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/event-seats/**"
@@ -257,8 +235,6 @@ public class SecurityConfig {
                                 "ADMIN"
                         )
 
-                        // ORGANIZER owner / ADMIN
-                        // Perditeson cmimin
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/event-seats/**"
@@ -267,8 +243,6 @@ public class SecurityConfig {
                                 "ADMIN"
                         )
 
-                        // ORGANIZER owner / ADMIN
-                        // Fshin EventSeat
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/event-seats/**"
@@ -277,30 +251,23 @@ public class SecurityConfig {
                                 "ADMIN"
                         )
 
-
                         // BOOKINGS
 
                         // USER / ORGANIZER / ADMIN
-                        // Krijon booking per user-in aktual
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/bookings"
                         ).authenticated()
 
                         // Booking-et personale
+                        // Duhet te jene para /api/bookings/*
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/api/bookings/me"
-                        ).authenticated()
-
-                        // Booking-et personale sipas statusit
-                        .requestMatchers(
-                                HttpMethod.GET,
+                                "/api/bookings/me",
                                 "/api/bookings/me/status/*"
                         ).authenticated()
 
                         // ORGANIZER owner / ADMIN
-                        // Shikon booking-et e nje eventi
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/bookings/event/*"
@@ -309,8 +276,7 @@ public class SecurityConfig {
                                 "ADMIN"
                         )
 
-                        // ORGANIZER owner / ADMIN
-                        // Konfirmon booking
+                        // PENDING -> CONFIRMED
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/bookings/*/confirm"
@@ -319,15 +285,7 @@ public class SecurityConfig {
                                 "ADMIN"
                         )
 
-                        // USER owner / ADMIN
-                        // Anulon booking
-                        .requestMatchers(
-                                HttpMethod.PATCH,
-                                "/api/bookings/*/cancel"
-                        ).authenticated()
-
-                        // ORGANIZER owner / ADMIN
-                        // Perfundon booking
+                        // CONFIRMED -> COMPLETED
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/bookings/*/complete"
@@ -337,48 +295,32 @@ public class SecurityConfig {
                         )
 
                         // USER owner / ADMIN
-                        // Merr booking sipas ID
+                        // Ownership kontrollohet  Service
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/bookings/*/cancel"
+                        ).authenticated()
+
+                        // USER owner / ADMIN
+                        // Ownership kontrollohet  Service
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/bookings/*"
                         ).authenticated()
 
-                                // PAYMENTS
-                                // USER owner / ADMIN
-                        // Krijon payment per booking
-                                .requestMatchers(
-                                        HttpMethod.POST,
-                                        "/api/payments/booking/*"
-                                ).authenticated()
-                                // USER owner / ADMIN
-                                // Merr payment sipas booking
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/api/payments/booking/*"
-                                ).authenticated()
-                                // USER owner / ADMIN
-                                // Merr payment sipas ID
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/api/payments/*"
-                                ).authenticated()
-                                // USER owner / ADMIN
-                                // Perfundon payment
-                                .requestMatchers(
-                                        HttpMethod.PATCH,
-                                        "/api/payments/*/complete"
-                                ).authenticated()
+                        // PAYMENTS
 
-                                // USER owner / ADMIN
-                                // Refund payment
-                                .requestMatchers(
-                                        HttpMethod.PATCH,
-                                        "/api/payments/*/refund"
-                                ).authenticated()
+                        // BOOKING OWNER / ADMIN
+                        // Ownership kontrollohet  Service
+                        .requestMatchers(
+                                "/api/payments/**"
+                        ).authenticated()
 
                         // REVIEWS
 
-                        // AUTHENTICATED - reviews personale
+
+                        // Reviews personale
+                        // Duhet te jete para /api/reviews/*
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/reviews/me"
@@ -403,123 +345,86 @@ public class SecurityConfig {
                         ).authenticated()
 
                         // OWNER / ADMIN
+                        // Ownership kontrollohet ne Service
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/reviews/*"
                         ).authenticated()
 
-                        // OWNER / ADMIN
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/reviews/*"
                         ).authenticated()
 
+                        // WAITLIST
 
-                        // WAITLIST - ORGANIZER / ADMIN
-
+                        // ORGANIZER owner / ADMIN
+                        // Duhet te jene para GET /api/waitlists/*
                         .requestMatchers(
                                 HttpMethod.GET,
+                                "/api/waitlists/event/*",
                                 "/api/waitlists/event/*/status/*"
                         ).hasAnyRole(
                                 "ORGANIZER",
                                 "ADMIN"
                         )
 
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/waitlists/event/*"
-                        ).hasAnyRole(
-                                "ORGANIZER",
-                                "ADMIN"
-                        )
-
+                        // ORGANIZER owner / ADMIN
                         .requestMatchers(
                                 HttpMethod.PATCH,
-                                "/api/waitlists/*/notify"
-                        ).hasAnyRole(
-                                "ORGANIZER",
-                                "ADMIN"
-                        )
-
-                        .requestMatchers(
-                                HttpMethod.PATCH,
+                                "/api/waitlists/*/notify",
                                 "/api/waitlists/*/convert"
                         ).hasAnyRole(
                                 "ORGANIZER",
                                 "ADMIN"
                         )
 
-
-                        // WAITLIST - USER I AUTENTIKUAR
-
+                        // USER / ORGANIZER / ADMIN
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/waitlists/event/*"
                         ).authenticated()
 
+                        // Waitlist personale
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/waitlists/my"
                         ).authenticated()
 
+                        // USER owner
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/waitlists/*/cancel"
                         ).authenticated()
 
+                        // USER owner / ORGANIZER owner / ADMIN
+                        // Ownership kontrollohet Service
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/waitlists/*"
                         ).authenticated()
 
-                                // NOTIFICATIONS
-                                // USER / ORGANIZER / ADMIN
-                        // Merr notifications personale
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/api/notifications/me"
-                                ).authenticated()
-                                // USER / ORGANIZER / ADMIN
-                                // Merr notifications UNREAD
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/api/notifications/me/unread"
-                                ).authenticated()
-                                // USER / ORGANIZER / ADMIN
-                                // Numeron notifications UNREAD
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/api/notifications/me/unread/count"
-                                ).authenticated()
-                                // USER owner / ADMIN
-                                // Ownership kontrollohet  Service
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/api/notifications/*"
-                                ).authenticated()
-                                // USER owner / ADMIN
-                                // UNREAD -> READ
-                                .requestMatchers(
-                                        HttpMethod.PATCH,
-                                        "/api/notifications/*/read"
-                                ).authenticated()
-                                // USER / ORGANIZER / ADMIN
-                                // Te gjitha notifications personale -> READ
-                                .requestMatchers(
-                                        HttpMethod.PATCH,
-                                        "/api/notifications/me/read-all"
-                                ).authenticated()
+                        // NOTIFICATIONS
 
-                        // CDO REQUEST TJETER - GJITHMONE I FUNDIT
+                        // USER / ORGANIZER / ADMIN
+                        // Ownership kontrollohet  Service
+                        .requestMatchers(
+                                "/api/notifications/**"
+                        ).authenticated()
+
+                        // CDO REQUEST TJETER
+                        // GJITHMONE I FUNDIT
 
                         .anyRequest().authenticated()
                 )
 
-                // JWT filter perpara username/password filter
+                // JWT filter ekzekutohet para
+                // UsernamePasswordAuthenticationFilter
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 );
 
         return http.build();
-}}
+    }
+}

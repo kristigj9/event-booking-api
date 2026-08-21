@@ -74,7 +74,9 @@ public class EventServiceImpl implements EventService {
                 );
 
         List<Category> categories =
-                findCategories(request.getCategories());
+                findCategories(
+                        request.getCategories()
+                );
 
         validateEventDates(
                 request.getEventStartDateTime(),
@@ -102,13 +104,17 @@ public class EventServiceImpl implements EventService {
                 savedEvent.getId()
         );
 
-        return eventMapper.toResponse(savedEvent);
+        return eventMapper.toResponse(
+                savedEvent
+        );
     }
 
     // GET EVENT BY ID
     @Override
     @Transactional(readOnly = true)
-    public EventResponse getEventById(Long id) {
+    public EventResponse getEventById(
+            Long id
+    ) {
 
         log.debug(
                 "Fetching event by id: {}",
@@ -118,7 +124,9 @@ public class EventServiceImpl implements EventService {
         Event event =
                 findEvent(id);
 
-        return eventMapper.toResponse(event);
+        return eventMapper.toResponse(
+                event
+        );
     }
 
     // GET ALL EVENTS
@@ -243,7 +251,9 @@ public class EventServiceImpl implements EventService {
                 );
 
         List<Category> categories =
-                findCategories(request.getCategories());
+                findCategories(
+                        request.getCategories()
+                );
 
         validateEventDates(
                 request.getEventStartDateTime(),
@@ -299,13 +309,17 @@ public class EventServiceImpl implements EventService {
                 updatedEvent.getId()
         );
 
-        return eventMapper.toResponse(updatedEvent);
+        return eventMapper.toResponse(
+                updatedEvent
+        );
     }
 
     // DELETE EVENT
     @Override
     @Transactional
-    public void deleteEvent(Long eventId) {
+    public void deleteEvent(
+            Long eventId
+    ) {
 
         Event event =
                 findEvent(eventId);
@@ -324,7 +338,49 @@ public class EventServiceImpl implements EventService {
                 currentUser
         );
 
-        eventRepository.delete(event);
+        if (event.getEventStatus()
+                != EventStatus.DRAFT
+                && event.getEventStatus()
+                != EventStatus.CANCELLED) {
+
+            log.warn(
+                    "Event deletion rejected. Event id: {}, status: {}",
+                    eventId,
+                    event.getEventStatus()
+            );
+
+            throw new InvalidOperationException(
+                    "Only draft or cancelled events can be deleted"
+            );
+        }
+
+        if (!event.getBookings().isEmpty()) {
+
+            log.warn(
+                    "Event deletion rejected. Event id: {} has associated bookings",
+                    eventId
+            );
+
+            throw new InvalidOperationException(
+                    "Event cannot be deleted because it has associated bookings"
+            );
+        }
+
+        if (!event.getWaitlists().isEmpty()) {
+
+            log.warn(
+                    "Event deletion rejected. Event id: {} has waitlist entries",
+                    eventId
+            );
+
+            throw new InvalidOperationException(
+                    "Event cannot be deleted because it has waitlist entries"
+            );
+        }
+
+        eventRepository.delete(
+                event
+        );
 
         log.info(
                 "Event deleted successfully with id: {}",
@@ -340,7 +396,8 @@ public class EventServiceImpl implements EventService {
             Long eventId
     ) {
 
-        return eventRepository.findById(eventId)
+        return eventRepository
+                .findById(eventId)
                 .orElseThrow(() -> {
 
                     log.warn(
@@ -434,7 +491,8 @@ public class EventServiceImpl implements EventService {
             Venue venue
     ) {
 
-        if (totalSeats > venue.getVenueCapacity()) {
+        if (totalSeats
+                > venue.getVenueCapacity()) {
 
             log.warn(
                     "Event capacity validation failed. Requested seats: {}, venue capacity: {}, venue id: {}",
@@ -473,7 +531,8 @@ public class EventServiceImpl implements EventService {
         }
 
         // Event i perfunduar nuk mund te rikthehet
-        if (currentStatus == EventStatus.COMPLETED) {
+        if (currentStatus
+                == EventStatus.COMPLETED) {
 
             log.warn(
                     "Invalid status transition for completed event id: {}",
@@ -486,7 +545,8 @@ public class EventServiceImpl implements EventService {
         }
 
         // Event i anuluar nuk mund te riaktivizohet
-        if (currentStatus == EventStatus.CANCELLED) {
+        if (currentStatus
+                == EventStatus.CANCELLED) {
 
             log.warn(
                     "Invalid status transition for cancelled event id: {}",
@@ -499,10 +559,13 @@ public class EventServiceImpl implements EventService {
         }
 
         // DRAFT -> PUBLISHED ose CANCELLED
-        if (currentStatus == EventStatus.DRAFT) {
+        if (currentStatus
+                == EventStatus.DRAFT) {
 
-            if (newStatus != EventStatus.PUBLISHED
-                    && newStatus != EventStatus.CANCELLED) {
+            if (newStatus
+                    != EventStatus.PUBLISHED
+                    && newStatus
+                    != EventStatus.CANCELLED) {
 
                 log.warn(
                         "Invalid DRAFT status transition for event id: {} to {}",
@@ -519,16 +582,21 @@ public class EventServiceImpl implements EventService {
         }
 
         // PUBLISHED -> COMPLETED ose CANCELLED
-        if (currentStatus == EventStatus.PUBLISHED) {
+        if (currentStatus
+                == EventStatus.PUBLISHED) {
 
-            if (newStatus == EventStatus.CANCELLED) {
+            if (newStatus
+                    == EventStatus.CANCELLED) {
                 return;
             }
 
-            if (newStatus == EventStatus.COMPLETED) {
+            if (newStatus
+                    == EventStatus.COMPLETED) {
 
                 if (request.getEventEndDateTime()
-                        .isAfter(LocalDateTime.now())) {
+                        .isAfter(
+                                LocalDateTime.now()
+                        )) {
 
                     log.warn(
                             "Event id: {} cannot be completed before end date: {}",
@@ -573,12 +641,15 @@ public class EventServiceImpl implements EventService {
     ) {
 
         boolean isAdmin =
-                currentUser.getRole() == Role.ADMIN;
+                currentUser.getRole()
+                        == Role.ADMIN;
 
         boolean isOwner =
                 event.getOrganizer()
                         .getId()
-                        .equals(currentUser.getId());
+                        .equals(
+                                currentUser.getId()
+                        );
 
         if (!isAdmin && !isOwner) {
 

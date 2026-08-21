@@ -1,6 +1,8 @@
 package com.lhind.event_booking_api.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -15,63 +17,54 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log =
+            LogManager.getLogger(
+                    GlobalExceptionHandler.class
+            );
+
+    // 404 - RESOURCE NOT FOUND
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(
             ResourceNotFoundException ex,
             HttpServletRequest request
     ) {
 
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.NOT_FOUND.value())
-                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
-                .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(error);
+        return buildErrorResponse(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage(),
+                request
+        );
     }
 
+    // 409 - DUPLICATE RESOURCE
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateResource(
             DuplicateResourceException ex,
             HttpServletRequest request
     ) {
 
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.CONFLICT.value())
-                .error(HttpStatus.CONFLICT.getReasonPhrase())
-                .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(error);
+        return buildErrorResponse(
+                HttpStatus.CONFLICT,
+                ex.getMessage(),
+                request
+        );
     }
 
+    // 400 - BUSINESS RULE
     @ExceptionHandler(InvalidOperationException.class)
     public ResponseEntity<ErrorResponse> handleInvalidOperation(
             InvalidOperationException ex,
             HttpServletRequest request
     ) {
 
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(error);
+        return buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage(),
+                request
+        );
     }
 
+    // 400 - PASSWORD ERRORS
     @ExceptionHandler({
             InvalidPasswordException.class,
             PasswordMismatchException.class
@@ -81,26 +74,39 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ) {
 
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(error);
+        return buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage(),
+                request
+        );
     }
 
+    // 400 - INVALID ARGUMENT / OLD BUSINESS EXCEPTION
+    @ExceptionHandler({
+            IllegalArgumentException.class,
+            IllegalStateException.class
+    })
+    public ResponseEntity<ErrorResponse> handleIllegalOperation(
+            RuntimeException ex,
+            HttpServletRequest request
+    ) {
+
+        return buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage(),
+                request
+        );
+    }
+
+    // 400 - VALIDATION
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(
             MethodArgumentNotValidException ex,
             HttpServletRequest request
     ) {
 
-        Map<String, String> errors = new HashMap<>();
+        Map<String, String> errors =
+                new HashMap<>();
 
         ex.getBindingResult()
                 .getFieldErrors()
@@ -111,57 +117,97 @@ public class GlobalExceptionHandler {
                         )
                 );
 
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .message("Validation failed")
-                .path(request.getRequestURI())
-                .validationErrors(errors)
-                .build();
+        ErrorResponse errorResponse =
+                ErrorResponse.builder()
+                        .timestamp(
+                                LocalDateTime.now()
+                        )
+                        .status(
+                                HttpStatus.BAD_REQUEST.value()
+                        )
+                        .error(
+                                HttpStatus.BAD_REQUEST
+                                        .getReasonPhrase()
+                        )
+                        .message(
+                                "Validation failed"
+                        )
+                        .path(
+                                request.getRequestURI()
+                        )
+                        .validationErrors(
+                                errors
+                        )
+                        .build();
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(errorResponse);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(
-            Exception ex,
-            HttpServletRequest request
-    ) {
-
-        ex.printStackTrace();
-
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
-                .message("An unexpected error occurred")
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(error);
-    }
-
+    // 400 - INVALID JSON / INVALID ENUM
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex,
             HttpServletRequest request
     ) {
 
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .message("Invalid request body or invalid value")
-                .path(request.getRequestURI())
-                .build();
+        return buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Invalid request body or invalid value",
+                request
+        );
+    }
+
+    // 500 - UNEXPECTED ERROR
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(
+            Exception ex,
+            HttpServletRequest request
+    ) {
+
+        log.error(
+                "Unexpected error while processing request {}",
+                request.getRequestURI(),
+                ex
+        );
+
+        return buildErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "An unexpected error occurred",
+                request
+        );
+    }
+
+    // PRIVATE HELPER METHOD
+
+    private ResponseEntity<ErrorResponse> buildErrorResponse(
+            HttpStatus status,
+            String message,
+            HttpServletRequest request
+    ) {
+
+        ErrorResponse errorResponse =
+                ErrorResponse.builder()
+                        .timestamp(
+                                LocalDateTime.now()
+                        )
+                        .status(
+                                status.value()
+                        )
+                        .error(
+                                status.getReasonPhrase()
+                        )
+                        .message(
+                                message
+                        )
+                        .path(
+                                request.getRequestURI()
+                        )
+                        .build();
 
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(error);
+                .status(status)
+                .body(errorResponse);
     }
 }

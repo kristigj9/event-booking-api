@@ -7,13 +7,17 @@ import com.lhind.event_booking_api.entity.*;
 import com.lhind.event_booking_api.exception.InvalidOperationException;
 import com.lhind.event_booking_api.exception.ResourceNotFoundException;
 import com.lhind.event_booking_api.mapper.BookingMapper;
-import com.lhind.event_booking_api.repository.*;
+import com.lhind.event_booking_api.repository.BookingRepository;
+import com.lhind.event_booking_api.repository.EventRepository;
+import com.lhind.event_booking_api.repository.EventSeatRepository;
+import com.lhind.event_booking_api.repository.SeatRepository;
 import com.lhind.event_booking_api.security.AuthenticatedUserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,6 +72,33 @@ public class BookingServiceImpl implements BookingService {
 
         Event event =
                 findEvent(request.getEventId());
+
+        if (event.getEventStatus()
+                != EventStatus.PUBLISHED) {
+
+            log.warn(
+                    "Booking rejected for event id: {} because event status is: {}",
+                    event.getId(),
+                    event.getEventStatus()
+            );
+
+            throw new InvalidOperationException(
+                    "Bookings can only be created for published events"
+            );
+        }
+
+        if (!event.getEventStartDateTime()
+                .isAfter(LocalDateTime.now())) {
+
+            log.warn(
+                    "Booking rejected for event id: {} because event has already started",
+                    event.getId()
+            );
+
+            throw new InvalidOperationException(
+                    "Booking cannot be created after the event has started"
+            );
+        }
 
         if (event.getEventAvailableSeats()
                 < request.getSeats().size()) {
@@ -169,7 +200,6 @@ public class BookingServiceImpl implements BookingService {
         );
     }
 
-
     // GET BY ID
     @Override
     @Transactional(readOnly = true)
@@ -198,7 +228,6 @@ public class BookingServiceImpl implements BookingService {
         );
     }
 
-
     // GET BOOKINGS OF CURRENT USER
     @Override
     @Transactional(readOnly = true)
@@ -218,7 +247,6 @@ public class BookingServiceImpl implements BookingService {
                 )
         );
     }
-
 
     // GET BOOKINGS BY EVENT
     @Override
@@ -251,7 +279,6 @@ public class BookingServiceImpl implements BookingService {
         );
     }
 
-
     // GET CURRENT USER BOOKINGS BY STATUS
     @Override
     @Transactional(readOnly = true)
@@ -276,7 +303,6 @@ public class BookingServiceImpl implements BookingService {
                         )
         );
     }
-
 
     // CONFIRM
     @Override
@@ -354,15 +380,13 @@ public class BookingServiceImpl implements BookingService {
                 savedBooking.getId()
         );
 
-        // Krijon notification per user-in e booking
         notificationService.createNotification(
                 savedBooking.getUser(),
                 savedBooking.getEvent(),
                 savedBooking,
                 NotificationType.BOOKING_CONFIRMED,
                 "Your booking for event "
-                        + savedBooking.getEvent()
-                        .getEventName()
+                        + savedBooking.getEvent().getEventName()
                         + " has been confirmed"
         );
 
@@ -370,7 +394,6 @@ public class BookingServiceImpl implements BookingService {
                 savedBooking
         );
     }
-
 
     // CANCEL
     @Override
@@ -429,22 +452,14 @@ public class BookingServiceImpl implements BookingService {
                     bookingSeat.getEventSeat();
 
             if (eventSeat.getStatusSeat()
+                    == StatusSeat.RESERVED
+                    || eventSeat.getStatusSeat()
                     == StatusSeat.SOLD) {
 
-                log.warn(
-                        "Booking id: {} cannot be cancelled because event seat id: {} is SOLD",
-                        bookingId,
-                        eventSeat.getId()
-                );
-
-                throw new InvalidOperationException(
-                        "Confirmed seats cannot be released"
+                eventSeat.setStatusSeat(
+                        StatusSeat.AVAILABLE
                 );
             }
-
-            eventSeat.setStatusSeat(
-                    StatusSeat.AVAILABLE
-            );
         }
 
         Event event =
@@ -467,15 +482,13 @@ public class BookingServiceImpl implements BookingService {
                 savedBooking.getId()
         );
 
-        // Krijon notification per user-in e booking
         notificationService.createNotification(
                 savedBooking.getUser(),
                 savedBooking.getEvent(),
                 savedBooking,
                 NotificationType.BOOKING_CANCELLED,
                 "Your booking for event "
-                        + savedBooking.getEvent()
-                        .getEventName()
+                        + savedBooking.getEvent().getEventName()
                         + " has been cancelled"
         );
 
@@ -483,7 +496,6 @@ public class BookingServiceImpl implements BookingService {
                 savedBooking
         );
     }
-
 
     // COMPLETE
     @Override
@@ -535,15 +547,13 @@ public class BookingServiceImpl implements BookingService {
                 savedBooking.getId()
         );
 
-        // Krijon notification per user-in e booking
         notificationService.createNotification(
                 savedBooking.getUser(),
                 savedBooking.getEvent(),
                 savedBooking,
                 NotificationType.BOOKING_COMPLETED,
                 "Your booking for event "
-                        + savedBooking.getEvent()
-                        .getEventName()
+                        + savedBooking.getEvent().getEventName()
                         + " has been completed"
         );
 
@@ -551,7 +561,6 @@ public class BookingServiceImpl implements BookingService {
                 savedBooking
         );
     }
-
 
     // --------------------------------
     // PRIVATE HELPER METHODS
@@ -577,7 +586,6 @@ public class BookingServiceImpl implements BookingService {
                 });
     }
 
-
     private Event findEvent(
             Long eventId
     ) {
@@ -597,7 +605,6 @@ public class BookingServiceImpl implements BookingService {
                     );
                 });
     }
-
 
     private Seat findSeat(
             Event event,
@@ -628,7 +635,6 @@ public class BookingServiceImpl implements BookingService {
                 });
     }
 
-
     private EventSeat findEventSeat(
             Long eventId,
             Long seatId
@@ -652,7 +658,6 @@ public class BookingServiceImpl implements BookingService {
                     );
                 });
     }
-
 
     private void validateOwnership(
             Booking booking,
@@ -691,7 +696,6 @@ public class BookingServiceImpl implements BookingService {
         );
     }
 
-
     private void validateEventOwnership(
             Event event,
             User currentUser
@@ -728,7 +732,6 @@ public class BookingServiceImpl implements BookingService {
                 isAdmin
         );
     }
-
 
     private void validateDuplicateSeats(
             List<SeatSelectionRequest> seats

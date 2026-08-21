@@ -1,4 +1,5 @@
 package com.lhind.event_booking_api.entity;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,14 +30,14 @@ public class Venue {
 
     @Column(nullable = false)
     private Integer venueCapacity;
-    //Lidhja nje venue ka disa evente
+
+    // Nje venue mund te kete disa events
     @OneToMany(mappedBy = "venue")
     @Builder.Default
     private List<Event> events = new ArrayList<>();
 
-    //Lidhja e nje Veneu me disa Seat
+    // Nje venue mund te kete disa seats
     @OneToMany(mappedBy = "venue")
     @Builder.Default
     private List<Seat> seats = new ArrayList<>();
-
 }

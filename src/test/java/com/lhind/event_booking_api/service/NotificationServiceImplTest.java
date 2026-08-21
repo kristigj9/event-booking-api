@@ -4,15 +4,13 @@ import com.lhind.event_booking_api.dto.notification.NotificationResponse;
 import com.lhind.event_booking_api.entity.*;
 import com.lhind.event_booking_api.mapper.NotificationMapper;
 import com.lhind.event_booking_api.repository.NotificationRepository;
-import com.lhind.event_booking_api.repository.UserRepository;
+import com.lhind.event_booking_api.security.AuthenticatedUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,10 +25,10 @@ class NotificationServiceImplTest {
     private NotificationRepository notificationRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private NotificationMapper notificationMapper;
 
     @Mock
-    private NotificationMapper notificationMapper;
+    private AuthenticatedUserService authenticatedUserService;
 
     @InjectMocks
     private NotificationServiceImpl notificationService;
@@ -88,16 +86,7 @@ class NotificationServiceImplTest {
                 )
                 .message("Booking confirmed")
                 .build();
-
-        SecurityContextHolder.getContext()
-                .setAuthentication(
-                        new UsernamePasswordAuthenticationToken(
-                                "user@test.com",
-                                null
-                        )
-                );
     }
-
 
     // CREATE
 
@@ -138,7 +127,6 @@ class NotificationServiceImplTest {
         );
     }
 
-
     // GET BY ID
 
     @Test
@@ -147,8 +135,8 @@ class NotificationServiceImplTest {
         when(notificationRepository.findById(100L))
                 .thenReturn(Optional.of(notification));
 
-        when(userRepository.findByEmail("user@test.com"))
-                .thenReturn(Optional.of(user));
+        when(authenticatedUserService.getCurrentUser())
+                .thenReturn(user);
 
         when(notificationMapper.toResponse(notification))
                 .thenReturn(response);
@@ -162,10 +150,12 @@ class NotificationServiceImplTest {
         verify(notificationRepository)
                 .findById(100L);
 
+        verify(authenticatedUserService)
+                .getCurrentUser();
+
         verify(notificationMapper)
                 .toResponse(notification);
     }
-
 
     // GET MY NOTIFICATIONS
 
@@ -178,8 +168,8 @@ class NotificationServiceImplTest {
         List<NotificationResponse> responses =
                 List.of(response);
 
-        when(userRepository.findByEmail("user@test.com"))
-                .thenReturn(Optional.of(user));
+        when(authenticatedUserService.getCurrentUser())
+                .thenReturn(user);
 
         when(notificationRepository
                 .findByUserIdOrderByCreatedAtDesc(1L))
@@ -196,8 +186,10 @@ class NotificationServiceImplTest {
 
         verify(notificationRepository)
                 .findByUserIdOrderByCreatedAtDesc(1L);
-    }
 
+        verify(notificationMapper)
+                .toResponseList(notifications);
+    }
 
     // GET UNREAD
 
@@ -210,8 +202,8 @@ class NotificationServiceImplTest {
         List<NotificationResponse> responses =
                 List.of(response);
 
-        when(userRepository.findByEmail("user@test.com"))
-                .thenReturn(Optional.of(user));
+        when(authenticatedUserService.getCurrentUser())
+                .thenReturn(user);
 
         when(notificationRepository
                 .findByUserIdAndNotificationStatusOrderByCreatedAtDesc(
@@ -237,14 +229,13 @@ class NotificationServiceImplTest {
                 );
     }
 
-
     // COUNT UNREAD
 
     @Test
     void countMyUnreadNotifications_shouldReturnUnreadCount() {
 
-        when(userRepository.findByEmail("user@test.com"))
-                .thenReturn(Optional.of(user));
+        when(authenticatedUserService.getCurrentUser())
+                .thenReturn(user);
 
         when(notificationRepository
                 .countByUserIdAndNotificationStatus(
@@ -266,7 +257,6 @@ class NotificationServiceImplTest {
                 );
     }
 
-
     // MARK AS READ
 
     @Test
@@ -275,8 +265,8 @@ class NotificationServiceImplTest {
         when(notificationRepository.findById(100L))
                 .thenReturn(Optional.of(notification));
 
-        when(userRepository.findByEmail("user@test.com"))
-                .thenReturn(Optional.of(user));
+        when(authenticatedUserService.getCurrentUser())
+                .thenReturn(user);
 
         when(notificationRepository.save(notification))
                 .thenReturn(notification);
@@ -317,7 +307,6 @@ class NotificationServiceImplTest {
                 .save(notification);
     }
 
-
     @Test
     void markAsRead_shouldNotSaveWhenAlreadyRead() {
 
@@ -328,18 +317,20 @@ class NotificationServiceImplTest {
         when(notificationRepository.findById(100L))
                 .thenReturn(Optional.of(notification));
 
-        when(userRepository.findByEmail("user@test.com"))
-                .thenReturn(Optional.of(user));
+        when(authenticatedUserService.getCurrentUser())
+                .thenReturn(user);
 
         when(notificationMapper.toResponse(notification))
                 .thenReturn(response);
 
-        notificationService.markAsRead(100L);
+        NotificationResponse result =
+                notificationService.markAsRead(100L);
+
+        assertNotNull(result);
 
         verify(notificationRepository, never())
                 .save(any(Notification.class));
     }
-
 
     // MARK ALL AS READ
 
@@ -366,8 +357,8 @@ class NotificationServiceImplTest {
                         secondNotification
                 );
 
-        when(userRepository.findByEmail("user@test.com"))
-                .thenReturn(Optional.of(user));
+        when(authenticatedUserService.getCurrentUser())
+                .thenReturn(user);
 
         when(notificationRepository
                 .findByUserIdAndNotificationStatusOrderByCreatedAtDesc(

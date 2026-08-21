@@ -24,9 +24,6 @@ public class User {
 
     @Column(nullable = false)
     private String lastName;
-    @OneToMany(mappedBy = "user")
-    @Builder.Default
-    private List<Review> reviews = new ArrayList<>();
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -37,17 +34,23 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
-    //Lidhja One To Many, nje user disa Booking
-    @OneToMany(
-            mappedBy = "user")
+
+    // Nje user mund te kete disa reviews
+    @OneToMany(mappedBy = "user")
+    @Builder.Default
+    private List<Review> reviews = new ArrayList<>();
+
+    // Nje user mund te kete disa bookings
+    @OneToMany(mappedBy = "user")
     @Builder.Default
     private List<Booking> bookings = new ArrayList<>();
-    //Lidhja nje user orgeniser me shume evente
+
+    // Nje organizer mund te kete disa events
     @OneToMany(mappedBy = "organizer")
     @Builder.Default
     private List<Event> organizedEvents = new ArrayList<>();
 
-    // Lidhja e User me Waitlist
+    // Nje user mund te kete disa waitlist entries
     @OneToMany(
             mappedBy = "user",
             cascade = CascadeType.ALL,
@@ -55,7 +58,8 @@ public class User {
     )
     @Builder.Default
     private List<Waitlist> waitlists = new ArrayList<>();
-//Lidhja nje User disa Notification
+
+    // Nje user mund te kete disa notifications
     @OneToMany(
             mappedBy = "user",
             cascade = CascadeType.ALL,
@@ -63,6 +67,4 @@ public class User {
     )
     @Builder.Default
     private List<Notification> notifications = new ArrayList<>();
-
-
 }

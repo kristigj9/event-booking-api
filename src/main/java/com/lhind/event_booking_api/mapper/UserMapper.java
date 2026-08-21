@@ -13,7 +13,7 @@ import java.util.List;
 @Component
 public class UserMapper {
 
-    //RegisterRequest -> User
+    // RegisterRequest -> User
     public User toEntity(RegisterRequest request) {
 
         if (request == null) {
@@ -28,7 +28,7 @@ public class UserMapper {
                 .build();
     }
 
-    // User->UserResponse
+    // User -> UserResponse
     public UserResponse toResponse(User user) {
 
         if (user == null) {
@@ -44,8 +44,7 @@ public class UserMapper {
                 .build();
     }
 
-    //User-> UserResponseShort
-
+    // User -> UserResponseShort
     public UserResponseShort toShortResponse(User user) {
 
         if (user == null) {
@@ -56,22 +55,25 @@ public class UserMapper {
                 .id(user.getId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .email(user.getEmail())
                 .build();
     }
 
-    //List<User> -> List<UserResponse>
-
-    public List<UserResponse> toResponseList(List<User> users) {
+    // List<User> -> List<UserResponse>
+    public List<UserResponse> toResponseList(
+            List<User> users
+    ) {
 
         if (users == null) {
             return Collections.emptyList();
         }
+
         return users.stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    //Update UserUpdateRequest, User
+    // UserUpdateRequest -> existing User
     public void updateEntity(
             UserUpdateRequest request,
             User user

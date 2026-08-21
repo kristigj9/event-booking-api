@@ -108,7 +108,9 @@ public class CategoryController {
     ) {
 
         return ResponseEntity.ok(
-                categoryService.getCategoryById(id)
+                categoryService.getCategoryById(
+                        id
+                )
         );
     }
 
@@ -168,6 +170,10 @@ public class CategoryController {
                     description = "Category deleted successfully"
             ),
             @ApiResponse(
+                    responseCode = "400",
+                    description = "Category cannot be deleted because it is assigned to one or more events"
+            ),
+            @ApiResponse(
                     responseCode = "401",
                     description = "User is not authenticated"
             ),
@@ -185,7 +191,9 @@ public class CategoryController {
             @PathVariable Long id
     ) {
 
-        categoryService.deleteCategory(id);
+        categoryService.deleteCategory(
+                id
+        );
 
         return ResponseEntity
                 .noContent()

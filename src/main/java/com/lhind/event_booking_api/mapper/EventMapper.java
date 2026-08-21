@@ -6,6 +6,7 @@ import com.lhind.event_booking_api.dto.event.EventUpdateRequest;
 import com.lhind.event_booking_api.dto.reference.EventResponseShort;
 import com.lhind.event_booking_api.entity.Category;
 import com.lhind.event_booking_api.entity.Event;
+import com.lhind.event_booking_api.entity.EventStatus;
 import com.lhind.event_booking_api.entity.User;
 import com.lhind.event_booking_api.entity.Venue;
 import org.springframework.stereotype.Component;
@@ -49,14 +50,16 @@ public class EventMapper {
                 .eventEndDateTime(request.getEventEndDateTime())
                 .eventTotalSeats(request.getEventTotalSeats())
                 .eventAvailableSeats(request.getEventTotalSeats())
-                .eventStatus(request.getEventStatus())
+                .eventStatus(EventStatus.DRAFT)
                 .organizer(organizer)
                 .venue(venue)
                 .categories(new ArrayList<>(categories))
                 .build();
     }
 
-    public EventResponse toResponse(Event event) {
+    public EventResponse toResponse(
+            Event event
+    ) {
 
         if (event == null) {
             return null;
@@ -100,8 +103,15 @@ public class EventMapper {
         return EventResponseShort.builder()
                 .id(event.getId())
                 .eventName(event.getEventName())
-                .eventStartDateTime(event.getEventStartDateTime())
-                .eventEndDateTime(event.getEventEndDateTime())
+                .eventStartDateTime(
+                        event.getEventStartDateTime()
+                )
+                .eventEndDateTime(
+                        event.getEventEndDateTime()
+                )
+                .eventStatus(
+                        event.getEventStatus()
+                )
                 .build();
     }
 

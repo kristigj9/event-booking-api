@@ -84,10 +84,9 @@ public class EventController {
     @GetMapping
     public ResponseEntity<List<EventResponse>> getAllEvents() {
 
-        List<EventResponse> events =
-                eventService.getAllEvents();
-
-        return ResponseEntity.ok(events);
+        return ResponseEntity.ok(
+                eventService.getAllEvents()
+        );
     }
 
     // PUBLIC
@@ -110,10 +109,11 @@ public class EventController {
             @PathVariable Long id
     ) {
 
-        EventResponse response =
-                eventService.getEventById(id);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                eventService.getEventById(
+                        id
+                )
+        );
     }
 
     // PUBLIC
@@ -130,12 +130,11 @@ public class EventController {
             @PathVariable Long organizerId
     ) {
 
-        List<EventResponse> events =
+        return ResponseEntity.ok(
                 eventService.getEventsByOrganizer(
                         organizerId
-                );
-
-        return ResponseEntity.ok(events);
+                )
+        );
     }
 
     // PUBLIC
@@ -158,10 +157,11 @@ public class EventController {
             @PathVariable EventStatus status
     ) {
 
-        List<EventResponse> events =
-                eventService.getEventsByStatus(status);
-
-        return ResponseEntity.ok(events);
+        return ResponseEntity.ok(
+                eventService.getEventsByStatus(
+                        status
+                )
+        );
     }
 
     // PUBLIC
@@ -178,12 +178,11 @@ public class EventController {
             @PathVariable Long categoryId
     ) {
 
-        List<EventResponse> events =
+        return ResponseEntity.ok(
                 eventService.getEventsByCategory(
                         categoryId
-                );
-
-        return ResponseEntity.ok(events);
+                )
+        );
     }
 
     // PUBLIC
@@ -200,12 +199,11 @@ public class EventController {
             @PathVariable Long venueId
     ) {
 
-        List<EventResponse> events =
+        return ResponseEntity.ok(
                 eventService.getEventsByVenue(
                         venueId
-                );
-
-        return ResponseEntity.ok(events);
+                )
+        );
     }
 
     // ORGANIZER OWNER / ADMIN
@@ -241,24 +239,27 @@ public class EventController {
             @Valid @RequestBody EventUpdateRequest request
     ) {
 
-        EventResponse response =
+        return ResponseEntity.ok(
                 eventService.updateEvent(
                         eventId,
                         request
-                );
-
-        return ResponseEntity.ok(response);
+                )
+        );
     }
 
     // ORGANIZER OWNER / ADMIN
     @Operation(
             summary = "Delete event",
-            description = "Deletes an event. Accessible by the event organizer or ADMIN"
+            description = "Deletes a draft or cancelled event. Accessible by the event organizer or ADMIN"
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "204",
                     description = "Event deleted successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Event cannot be deleted because of its status or existing bookings/waitlists"
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -278,7 +279,9 @@ public class EventController {
             @PathVariable Long eventId
     ) {
 
-        eventService.deleteEvent(eventId);
+        eventService.deleteEvent(
+                eventId
+        );
 
         return ResponseEntity
                 .noContent()

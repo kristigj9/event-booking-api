@@ -45,6 +45,7 @@ public class EventSeatServiceImpl implements EventSeatService {
         this.authenticatedUserService = authenticatedUserService;
     }
 
+    // CREATE
     @Override
     @Transactional
     public EventSeatResponse createEventSeat(
@@ -52,7 +53,8 @@ public class EventSeatServiceImpl implements EventSeatService {
             EventSeatRequest request
     ) {
 
-        Event event = findEvent(eventId);
+        Event event =
+                findEvent(eventId);
 
         User currentUser =
                 authenticatedUserService.getCurrentUser();
@@ -68,25 +70,26 @@ public class EventSeatServiceImpl implements EventSeatService {
                 currentUser
         );
 
-        Seat seat = seatRepository
-                .findByVenueIdAndRowNumberAndSeatNumber(
-                        event.getVenue().getId(),
-                        request.getSeat().getRowNumber(),
-                        request.getSeat().getSeatNumber()
-                )
-                .orElseThrow(() -> {
+        Seat seat =
+                seatRepository
+                        .findByVenueIdAndRowNumberAndSeatNumber(
+                                event.getVenue().getId(),
+                                request.getSeat().getRowNumber(),
+                                request.getSeat().getSeatNumber()
+                        )
+                        .orElseThrow(() -> {
 
-                    log.warn(
-                            "Seat not found in venue id: {}. Seat: {}-{}",
-                            event.getVenue().getId(),
-                            request.getSeat().getRowNumber(),
-                            request.getSeat().getSeatNumber()
-                    );
+                            log.warn(
+                                    "Seat not found in venue id: {}. Seat: {}-{}",
+                                    event.getVenue().getId(),
+                                    request.getSeat().getRowNumber(),
+                                    request.getSeat().getSeatNumber()
+                            );
 
-                    return new ResourceNotFoundException(
-                            "Seat not found in event venue"
-                    );
-                });
+                            return new ResourceNotFoundException(
+                                    "Seat not found in event venue"
+                            );
+                        });
 
         if (eventSeatRepository
                 .findByEventIdAndSeatId(
@@ -110,8 +113,9 @@ public class EventSeatServiceImpl implements EventSeatService {
                 EventSeat.builder()
                         .event(event)
                         .seat(seat)
-                        .statusSeat(StatusSeat.AVAILABLE)
-                        .priceSeat(request.getPriceSeat())
+                        .priceSeat(
+                                request.getPriceSeat()
+                        )
                         .build();
 
         EventSeat savedEventSeat =
@@ -123,9 +127,12 @@ public class EventSeatServiceImpl implements EventSeatService {
                 eventId
         );
 
-        return eventSeatMapper.toResponse(savedEventSeat);
+        return eventSeatMapper.toResponse(
+                savedEventSeat
+        );
     }
 
+    // GET BY ID
     @Override
     @Transactional(readOnly = true)
     public EventSeatResponse getEventSeatById(
@@ -142,6 +149,7 @@ public class EventSeatServiceImpl implements EventSeatService {
         );
     }
 
+    // GET BY EVENT
     @Override
     @Transactional(readOnly = true)
     public List<EventSeatResponse> getSeatsByEvent(
@@ -156,10 +164,13 @@ public class EventSeatServiceImpl implements EventSeatService {
         findEvent(eventId);
 
         return eventSeatMapper.toResponseList(
-                eventSeatRepository.findByEventId(eventId)
+                eventSeatRepository.findByEventId(
+                        eventId
+                )
         );
     }
 
+    // GET BY EVENT AND STATUS
     @Override
     @Transactional(readOnly = true)
     public List<EventSeatResponse> getSeatsByEventAndStatus(
@@ -184,6 +195,7 @@ public class EventSeatServiceImpl implements EventSeatService {
         );
     }
 
+    // UPDATE PRICE
     @Override
     @Transactional
     public EventSeatResponse updatePrice(
@@ -222,7 +234,9 @@ public class EventSeatServiceImpl implements EventSeatService {
             );
         }
 
-        eventSeat.setPriceSeat(priceSeat);
+        eventSeat.setPriceSeat(
+                priceSeat
+        );
 
         EventSeat updatedEventSeat =
                 eventSeatRepository.save(eventSeat);
@@ -238,6 +252,7 @@ public class EventSeatServiceImpl implements EventSeatService {
         );
     }
 
+    // DELETE
     @Override
     @Transactional
     public void deleteEventSeat(
@@ -275,7 +290,21 @@ public class EventSeatServiceImpl implements EventSeatService {
             );
         }
 
-        eventSeatRepository.delete(eventSeat);
+        if (!eventSeat.getBookingSeats().isEmpty()) {
+
+            log.warn(
+                    "Event seat id: {} cannot be deleted because it is referenced by bookings",
+                    eventSeatId
+            );
+
+            throw new InvalidOperationException(
+                    "Event seat cannot be deleted because it is referenced by bookings"
+            );
+        }
+
+        eventSeatRepository.delete(
+                eventSeat
+        );
 
         log.info(
                 "Event seat deleted successfully with id: {}",
@@ -283,15 +312,14 @@ public class EventSeatServiceImpl implements EventSeatService {
         );
     }
 
-    // -----------------------------
     // PRIVATE HELPER METHODS
-    // -----------------------------
 
     private Event findEvent(
             Long eventId
     ) {
 
-        return eventRepository.findById(eventId)
+        return eventRepository
+                .findById(eventId)
                 .orElseThrow(() -> {
 
                     log.warn(
@@ -310,7 +338,8 @@ public class EventSeatServiceImpl implements EventSeatService {
             Long id
     ) {
 
-        return eventSeatRepository.findById(id)
+        return eventSeatRepository
+                .findById(id)
                 .orElseThrow(() -> {
 
                     log.warn(
@@ -331,12 +360,15 @@ public class EventSeatServiceImpl implements EventSeatService {
     ) {
 
         boolean isAdmin =
-                currentUser.getRole() == Role.ADMIN;
+                currentUser.getRole()
+                        == Role.ADMIN;
 
         boolean isOwner =
                 event.getOrganizer()
                         .getId()
-                        .equals(currentUser.getId());
+                        .equals(
+                                currentUser.getId()
+                        );
 
         if (!isAdmin && !isOwner) {
 

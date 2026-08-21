@@ -137,7 +137,9 @@ public class SeatController {
     ) {
 
         return ResponseEntity.ok(
-                seatService.getSeatsByVenue(venueId)
+                seatService.getSeatsByVenue(
+                        venueId
+                )
         );
     }
 
@@ -197,6 +199,10 @@ public class SeatController {
                     description = "Seat deleted successfully"
             ),
             @ApiResponse(
+                    responseCode = "400",
+                    description = "Seat cannot be deleted because it is assigned to one or more events"
+            ),
+            @ApiResponse(
                     responseCode = "401",
                     description = "User is not authenticated"
             ),
@@ -214,7 +220,9 @@ public class SeatController {
             @PathVariable Long id
     ) {
 
-        seatService.deleteSeat(id);
+        seatService.deleteSeat(
+                id
+        );
 
         return ResponseEntity
                 .noContent()

@@ -1,4 +1,5 @@
 package com.lhind.event_booking_api.entity;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,7 +23,8 @@ public class Category {
     private String nameCategory;
 
     private String descriptionCategory;
-    //Disa kategori ka disa Evente
+
+    // Nje kategori mund te lidhet me disa events
     @ManyToMany(mappedBy = "categories")
     @Builder.Default
     private List<Event> events = new ArrayList<>();

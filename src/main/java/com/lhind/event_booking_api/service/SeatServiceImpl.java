@@ -5,6 +5,7 @@ import com.lhind.event_booking_api.dto.seat.SeatResponse;
 import com.lhind.event_booking_api.entity.Seat;
 import com.lhind.event_booking_api.entity.Venue;
 import com.lhind.event_booking_api.exception.DuplicateResourceException;
+import com.lhind.event_booking_api.exception.InvalidOperationException;
 import com.lhind.event_booking_api.exception.ResourceNotFoundException;
 import com.lhind.event_booking_api.mapper.SeatMapper;
 import com.lhind.event_booking_api.repository.SeatRepository;
@@ -211,7 +212,7 @@ public class SeatServiceImpl implements SeatService {
         return seatMapper.toResponse(updatedSeat);
     }
 
-    // DELETE
+    //DELETE
     @Override
     @Transactional
     public void deleteSeat(
@@ -225,6 +226,18 @@ public class SeatServiceImpl implements SeatService {
 
         Seat seat =
                 findSeat(id);
+
+        if (!seat.getEventSeats().isEmpty()) {
+
+            log.warn(
+                    "Seat deletion rejected for seat id: {} because it is assigned to events",
+                    id
+            );
+
+            throw new InvalidOperationException(
+                    "Seat cannot be deleted because it is assigned to one or more events"
+            );
+        }
 
         seatRepository.delete(seat);
 

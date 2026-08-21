@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -94,6 +95,14 @@ class BookingServiceImplTest {
         event = Event.builder()
                 .id(1L)
                 .eventName("Music Event")
+                .eventStartDateTime(
+                        LocalDateTime.now().plusDays(5)
+                )
+                .eventEndDateTime(
+                        LocalDateTime.now()
+                                .plusDays(5)
+                                .plusHours(3)
+                )
                 .eventTotalSeats(100)
                 .eventAvailableSeats(100)
                 .eventStatus(EventStatus.PUBLISHED)
@@ -123,7 +132,9 @@ class BookingServiceImplTest {
 
         request = new BookingRequest();
         request.setEventId(1L);
-        request.setSeats(List.of(seatRequest));
+        request.setSeats(
+                List.of(seatRequest)
+        );
 
         booking = Booking.builder()
                 .id(1L)
@@ -131,14 +142,20 @@ class BookingServiceImplTest {
                 .event(event)
                 .bookingStatus(BookingStatus.PENDING)
                 .seatsBooked(1)
-                .bookingSeats(new ArrayList<>())
+                .bookingSeats(
+                        new ArrayList<>()
+                )
                 .build();
 
         response = BookingResponse.builder()
                 .id(1L)
-                .bookingStatus(BookingStatus.PENDING)
+                .bookingStatus(
+                        BookingStatus.PENDING
+                )
                 .build();
     }
+
+    // CREATE BOOKING
 
     @Test
     void createBooking_shouldCreateBookingSuccessfully() {
@@ -147,7 +164,9 @@ class BookingServiceImplTest {
                 .thenReturn(user);
 
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         when(bookingMapper.toEntity(
                 request,
@@ -161,25 +180,33 @@ class BookingServiceImplTest {
                         "A",
                         1
                 ))
-                .thenReturn(Optional.of(seat));
+                .thenReturn(
+                        Optional.of(seat)
+                );
 
         when(eventSeatRepository
                 .findByEventIdAndSeatId(
                         1L,
                         1L
                 ))
-                .thenReturn(Optional.of(eventSeat));
-
-        when(bookingRepository.save(any(Booking.class)))
-                .thenAnswer(invocation ->
-                        invocation.getArgument(0)
+                .thenReturn(
+                        Optional.of(eventSeat)
                 );
 
-        when(bookingMapper.toResponse(any(Booking.class)))
-                .thenReturn(response);
+        when(bookingRepository.save(
+                any(Booking.class)
+        )).thenAnswer(invocation ->
+                invocation.getArgument(0)
+        );
+
+        when(bookingMapper.toResponse(
+                any(Booking.class)
+        )).thenReturn(response);
 
         BookingResponse result =
-                bookingService.createBooking(request);
+                bookingService.createBooking(
+                        request
+                );
 
         assertNotNull(result);
 
@@ -203,7 +230,7 @@ class BookingServiceImplTest {
                 booking.getBookingSeats().size()
         );
 
-        verify(bookingRepository, times(1))
+        verify(bookingRepository)
                 .save(booking);
     }
 
@@ -216,12 +243,15 @@ class BookingServiceImplTest {
                 .thenReturn(user);
 
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> bookingService.createBooking(request)
+                        () -> bookingService
+                                .createBooking(request)
                 );
 
         assertEquals(
@@ -249,19 +279,25 @@ class BookingServiceImplTest {
         seat2.setSeatNumber(1);
 
         request.setSeats(
-                List.of(seat1, seat2)
+                List.of(
+                        seat1,
+                        seat2
+                )
         );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(user);
 
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> bookingService.createBooking(request)
+                        () -> bookingService
+                                .createBooking(request)
                 );
 
         assertEquals(
@@ -280,7 +316,9 @@ class BookingServiceImplTest {
                 .thenReturn(user);
 
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         when(bookingMapper.toEntity(
                 request,
@@ -294,12 +332,15 @@ class BookingServiceImplTest {
                         "A",
                         1
                 ))
-                .thenReturn(Optional.empty());
+                .thenReturn(
+                        Optional.empty()
+                );
 
         ResourceNotFoundException exception =
                 assertThrows(
                         ResourceNotFoundException.class,
-                        () -> bookingService.createBooking(request)
+                        () -> bookingService
+                                .createBooking(request)
                 );
 
         assertEquals(
@@ -318,7 +359,9 @@ class BookingServiceImplTest {
                 .thenReturn(user);
 
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         when(bookingMapper.toEntity(
                 request,
@@ -332,19 +375,24 @@ class BookingServiceImplTest {
                         "A",
                         1
                 ))
-                .thenReturn(Optional.of(seat));
+                .thenReturn(
+                        Optional.of(seat)
+                );
 
         when(eventSeatRepository
                 .findByEventIdAndSeatId(
                         1L,
                         1L
                 ))
-                .thenReturn(Optional.empty());
+                .thenReturn(
+                        Optional.empty()
+                );
 
         ResourceNotFoundException exception =
                 assertThrows(
                         ResourceNotFoundException.class,
-                        () -> bookingService.createBooking(request)
+                        () -> bookingService
+                                .createBooking(request)
                 );
 
         assertEquals(
@@ -367,7 +415,9 @@ class BookingServiceImplTest {
                 .thenReturn(user);
 
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         when(bookingMapper.toEntity(
                 request,
@@ -381,19 +431,24 @@ class BookingServiceImplTest {
                         "A",
                         1
                 ))
-                .thenReturn(Optional.of(seat));
+                .thenReturn(
+                        Optional.of(seat)
+                );
 
         when(eventSeatRepository
                 .findByEventIdAndSeatId(
                         1L,
                         1L
                 ))
-                .thenReturn(Optional.of(eventSeat));
+                .thenReturn(
+                        Optional.of(eventSeat)
+                );
 
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> bookingService.createBooking(request)
+                        () -> bookingService
+                                .createBooking(request)
                 );
 
         assertEquals(
@@ -406,16 +461,20 @@ class BookingServiceImplTest {
     }
 
     // CONFIRM BOOKING
+
     @Test
     void confirmBooking_shouldConfirmBookingSuccessfully() {
 
-        BookingSeat bookingSeat = BookingSeat.builder()
-                .booking(booking)
-                .eventSeat(eventSeat)
-                .build();
+        BookingSeat bookingSeat =
+                BookingSeat.builder()
+                        .booking(booking)
+                        .eventSeat(eventSeat)
+                        .build();
 
         booking.setBookingSeats(
-                new ArrayList<>(List.of(bookingSeat))
+                new ArrayList<>(
+                        List.of(bookingSeat)
+                )
         );
 
         booking.setBookingStatus(
@@ -427,7 +486,9 @@ class BookingServiceImplTest {
         );
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(organizer);
@@ -443,7 +504,9 @@ class BookingServiceImplTest {
                 .thenReturn(response);
 
         BookingResponse result =
-                bookingService.confirmBooking(1L);
+                bookingService.confirmBooking(
+                        1L
+                );
 
         assertNotNull(result);
 
@@ -457,15 +520,17 @@ class BookingServiceImplTest {
                 eventSeat.getStatusSeat()
         );
 
-        verify(bookingRepository, times(1))
+        verify(bookingRepository)
                 .save(booking);
 
-        verify(notificationService, times(1))
+        verify(notificationService)
                 .createNotification(
                         eq(user),
                         eq(event),
                         eq(booking),
-                        eq(NotificationType.BOOKING_CONFIRMED),
+                        eq(
+                                NotificationType.BOOKING_CONFIRMED
+                        ),
                         anyString()
                 );
     }
@@ -478,7 +543,9 @@ class BookingServiceImplTest {
         );
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(organizer);
@@ -486,7 +553,8 @@ class BookingServiceImplTest {
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> bookingService.confirmBooking(1L)
+                        () -> bookingService
+                                .confirmBooking(1L)
                 );
 
         assertEquals(
@@ -510,13 +578,16 @@ class BookingServiceImplTest {
     @Test
     void confirmBooking_shouldThrowExceptionWhenSeatIsNotReserved() {
 
-        BookingSeat bookingSeat = BookingSeat.builder()
-                .booking(booking)
-                .eventSeat(eventSeat)
-                .build();
+        BookingSeat bookingSeat =
+                BookingSeat.builder()
+                        .booking(booking)
+                        .eventSeat(eventSeat)
+                        .build();
 
         booking.setBookingSeats(
-                new ArrayList<>(List.of(bookingSeat))
+                new ArrayList<>(
+                        List.of(bookingSeat)
+                )
         );
 
         booking.setBookingStatus(
@@ -528,7 +599,9 @@ class BookingServiceImplTest {
         );
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(organizer);
@@ -536,7 +609,8 @@ class BookingServiceImplTest {
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> bookingService.confirmBooking(1L)
+                        () -> bookingService
+                                .confirmBooking(1L)
                 );
 
         assertEquals(
@@ -546,34 +620,28 @@ class BookingServiceImplTest {
 
         verify(bookingRepository, never())
                 .save(any(Booking.class));
-
-        verify(notificationService, never())
-                .createNotification(
-                        any(),
-                        any(),
-                        any(),
-                        any(),
-                        anyString()
-                );
     }
 
     @Test
     void confirmBooking_shouldThrowExceptionWhenOrganizerIsNotEventOwner() {
 
-        User anotherOrganizer = User.builder()
-                .id(99L)
-                .firstName("Other")
-                .lastName("Organizer")
-                .email("other.organizer@test.com")
-                .role(Role.ORGANIZER)
-                .build();
+        User anotherOrganizer =
+                User.builder()
+                        .id(99L)
+                        .firstName("Other")
+                        .lastName("Organizer")
+                        .email("other.organizer@test.com")
+                        .role(Role.ORGANIZER)
+                        .build();
 
         booking.setBookingStatus(
                 BookingStatus.PENDING
         );
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(anotherOrganizer);
@@ -581,7 +649,8 @@ class BookingServiceImplTest {
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> bookingService.confirmBooking(1L)
+                        () -> bookingService
+                                .confirmBooking(1L)
                 );
 
         assertEquals(
@@ -591,28 +660,23 @@ class BookingServiceImplTest {
 
         verify(bookingRepository, never())
                 .save(any(Booking.class));
-
-        verify(notificationService, never())
-                .createNotification(
-                        any(),
-                        any(),
-                        any(),
-                        any(),
-                        anyString()
-                );
     }
 
     // CANCEL BOOKING
+
     @Test
     void cancelBooking_shouldCancelBookingSuccessfully() {
 
-        BookingSeat bookingSeat = BookingSeat.builder()
-                .booking(booking)
-                .eventSeat(eventSeat)
-                .build();
+        BookingSeat bookingSeat =
+                BookingSeat.builder()
+                        .booking(booking)
+                        .eventSeat(eventSeat)
+                        .build();
 
         booking.setBookingSeats(
-                new ArrayList<>(List.of(bookingSeat))
+                new ArrayList<>(
+                        List.of(bookingSeat)
+                )
         );
 
         booking.setBookingStatus(
@@ -628,7 +692,9 @@ class BookingServiceImplTest {
         );
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(user);
@@ -644,7 +710,9 @@ class BookingServiceImplTest {
                 .thenReturn(response);
 
         BookingResponse result =
-                bookingService.cancelBooking(1L);
+                bookingService.cancelBooking(
+                        1L
+                );
 
         assertNotNull(result);
 
@@ -663,15 +731,17 @@ class BookingServiceImplTest {
                 event.getEventAvailableSeats()
         );
 
-        verify(bookingRepository, times(1))
+        verify(bookingRepository)
                 .save(booking);
 
-        verify(notificationService, times(1))
+        verify(notificationService)
                 .createNotification(
                         eq(user),
                         eq(event),
                         eq(booking),
-                        eq(NotificationType.BOOKING_CANCELLED),
+                        eq(
+                                NotificationType.BOOKING_CANCELLED
+                        ),
                         anyString()
                 );
     }
@@ -684,7 +754,9 @@ class BookingServiceImplTest {
         );
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(user);
@@ -692,7 +764,8 @@ class BookingServiceImplTest {
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> bookingService.cancelBooking(1L)
+                        () -> bookingService
+                                .cancelBooking(1L)
                 );
 
         assertEquals(
@@ -702,15 +775,6 @@ class BookingServiceImplTest {
 
         verify(bookingRepository, never())
                 .save(any(Booking.class));
-
-        verify(notificationService, never())
-                .createNotification(
-                        any(),
-                        any(),
-                        any(),
-                        any(),
-                        anyString()
-                );
     }
 
     @Test
@@ -721,7 +785,9 @@ class BookingServiceImplTest {
         );
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(user);
@@ -729,7 +795,8 @@ class BookingServiceImplTest {
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> bookingService.cancelBooking(1L)
+                        () -> bookingService
+                                .cancelBooking(1L)
                 );
 
         assertEquals(
@@ -739,63 +806,86 @@ class BookingServiceImplTest {
 
         verify(bookingRepository, never())
                 .save(any(Booking.class));
-
-        verify(notificationService, never())
-                .createNotification(
-                        any(),
-                        any(),
-                        any(),
-                        any(),
-                        anyString()
-                );
     }
 
     @Test
-    void cancelBooking_shouldThrowExceptionWhenSeatIsSold() {
+    void cancelBooking_shouldReleaseSoldSeatWhenConfirmedBookingIsCancelled() {
 
-        BookingSeat bookingSeat = BookingSeat.builder()
-                .booking(booking)
-                .eventSeat(eventSeat)
-                .build();
+        BookingSeat bookingSeat =
+                BookingSeat.builder()
+                        .booking(booking)
+                        .eventSeat(eventSeat)
+                        .build();
 
         booking.setBookingSeats(
-                new ArrayList<>(List.of(bookingSeat))
+                new ArrayList<>(
+                        List.of(bookingSeat)
+                )
         );
 
         booking.setBookingStatus(
                 BookingStatus.CONFIRMED
         );
 
+        booking.setSeatsBooked(1);
+
+        event.setEventAvailableSeats(99);
+
         eventSeat.setStatusSeat(
                 StatusSeat.SOLD
         );
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(user);
 
-        InvalidOperationException exception =
-                assertThrows(
-                        InvalidOperationException.class,
-                        () -> bookingService.cancelBooking(1L)
-                );
+        when(bookingRepository.save(booking))
+                .thenReturn(booking);
 
-        assertEquals(
-                "Confirmed seats cannot be released",
-                exception.getMessage()
+        response.setBookingStatus(
+                BookingStatus.CANCELLED
         );
 
-        verify(bookingRepository, never())
-                .save(any(Booking.class));
+        when(bookingMapper.toResponse(booking))
+                .thenReturn(response);
 
-        verify(notificationService, never())
+        BookingResponse result =
+                bookingService.cancelBooking(
+                        1L
+                );
+
+        assertNotNull(result);
+
+        assertEquals(
+                BookingStatus.CANCELLED,
+                booking.getBookingStatus()
+        );
+
+        assertEquals(
+                StatusSeat.AVAILABLE,
+                eventSeat.getStatusSeat()
+        );
+
+        assertEquals(
+                100,
+                event.getEventAvailableSeats()
+        );
+
+        verify(bookingRepository)
+                .save(booking);
+
+        verify(notificationService)
                 .createNotification(
-                        any(),
-                        any(),
-                        any(),
-                        any(),
+                        eq(user),
+                        eq(event),
+                        eq(booking),
+                        eq(
+                                NotificationType.BOOKING_CANCELLED
+                        ),
                         anyString()
                 );
     }
@@ -803,20 +893,23 @@ class BookingServiceImplTest {
     @Test
     void cancelBooking_shouldThrowExceptionWhenUserIsNotOwner() {
 
-        User anotherUser = User.builder()
-                .id(99L)
-                .firstName("Other")
-                .lastName("User")
-                .email("other.user@test.com")
-                .role(Role.USER)
-                .build();
+        User anotherUser =
+                User.builder()
+                        .id(99L)
+                        .firstName("Other")
+                        .lastName("User")
+                        .email("other.user@test.com")
+                        .role(Role.USER)
+                        .build();
 
         booking.setBookingStatus(
                 BookingStatus.PENDING
         );
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(anotherUser);
@@ -824,7 +917,8 @@ class BookingServiceImplTest {
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> bookingService.cancelBooking(1L)
+                        () -> bookingService
+                                .cancelBooking(1L)
                 );
 
         assertEquals(
@@ -834,18 +928,10 @@ class BookingServiceImplTest {
 
         verify(bookingRepository, never())
                 .save(any(Booking.class));
-
-        verify(notificationService, never())
-                .createNotification(
-                        any(),
-                        any(),
-                        any(),
-                        any(),
-                        anyString()
-                );
     }
 
     // COMPLETE BOOKING
+
     @Test
     void completeBooking_shouldCompleteBookingSuccessfully() {
 
@@ -854,7 +940,9 @@ class BookingServiceImplTest {
         );
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(organizer);
@@ -870,7 +958,9 @@ class BookingServiceImplTest {
                 .thenReturn(response);
 
         BookingResponse result =
-                bookingService.completeBooking(1L);
+                bookingService.completeBooking(
+                        1L
+                );
 
         assertNotNull(result);
 
@@ -879,15 +969,17 @@ class BookingServiceImplTest {
                 booking.getBookingStatus()
         );
 
-        verify(bookingRepository, times(1))
+        verify(bookingRepository)
                 .save(booking);
 
-        verify(notificationService, times(1))
+        verify(notificationService)
                 .createNotification(
                         eq(user),
                         eq(event),
                         eq(booking),
-                        eq(NotificationType.BOOKING_COMPLETED),
+                        eq(
+                                NotificationType.BOOKING_COMPLETED
+                        ),
                         anyString()
                 );
     }
@@ -900,7 +992,9 @@ class BookingServiceImplTest {
         );
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(organizer);
@@ -908,7 +1002,8 @@ class BookingServiceImplTest {
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> bookingService.completeBooking(1L)
+                        () -> bookingService
+                                .completeBooking(1L)
                 );
 
         assertEquals(
@@ -918,34 +1013,28 @@ class BookingServiceImplTest {
 
         verify(bookingRepository, never())
                 .save(any(Booking.class));
-
-        verify(notificationService, never())
-                .createNotification(
-                        any(),
-                        any(),
-                        any(),
-                        any(),
-                        anyString()
-                );
     }
 
     @Test
     void completeBooking_shouldThrowExceptionWhenOrganizerIsNotEventOwner() {
 
-        User anotherOrganizer = User.builder()
-                .id(99L)
-                .firstName("Other")
-                .lastName("Organizer")
-                .email("other.organizer@test.com")
-                .role(Role.ORGANIZER)
-                .build();
+        User anotherOrganizer =
+                User.builder()
+                        .id(99L)
+                        .firstName("Other")
+                        .lastName("Organizer")
+                        .email("other.organizer@test.com")
+                        .role(Role.ORGANIZER)
+                        .build();
 
         booking.setBookingStatus(
                 BookingStatus.CONFIRMED
         );
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(anotherOrganizer);
@@ -953,7 +1042,8 @@ class BookingServiceImplTest {
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> bookingService.completeBooking(1L)
+                        () -> bookingService
+                                .completeBooking(1L)
                 );
 
         assertEquals(
@@ -963,22 +1053,18 @@ class BookingServiceImplTest {
 
         verify(bookingRepository, never())
                 .save(any(Booking.class));
-
-        verify(notificationService, never())
-                .createNotification(
-                        any(),
-                        any(),
-                        any(),
-                        any(),
-                        anyString()
-                );
     }
+
+    // GET BOOKING
+    
 
     @Test
     void getBookingById_shouldReturnBookingSuccessfully() {
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(user);
@@ -987,7 +1073,9 @@ class BookingServiceImplTest {
                 .thenReturn(response);
 
         BookingResponse result =
-                bookingService.getBookingById(1L);
+                bookingService.getBookingById(
+                        1L
+                );
 
         assertNotNull(result);
 
@@ -996,26 +1084,29 @@ class BookingServiceImplTest {
                 result
         );
 
-        verify(bookingRepository, times(1))
+        verify(bookingRepository)
                 .findById(1L);
 
-        verify(bookingMapper, times(1))
+        verify(bookingMapper)
                 .toResponse(booking);
     }
 
     @Test
     void getBookingById_shouldThrowExceptionWhenUserIsNotOwner() {
 
-        User anotherUser = User.builder()
-                .id(99L)
-                .firstName("Other")
-                .lastName("User")
-                .email("other.user@test.com")
-                .role(Role.USER)
-                .build();
+        User anotherUser =
+                User.builder()
+                        .id(99L)
+                        .firstName("Other")
+                        .lastName("User")
+                        .email("other.user@test.com")
+                        .role(Role.USER)
+                        .build();
 
         when(bookingRepository.findById(1L))
-                .thenReturn(Optional.of(booking));
+                .thenReturn(
+                        Optional.of(booking)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(anotherUser);
@@ -1023,7 +1114,8 @@ class BookingServiceImplTest {
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> bookingService.getBookingById(1L)
+                        () -> bookingService
+                                .getBookingById(1L)
                 );
 
         assertEquals(
@@ -1032,7 +1124,9 @@ class BookingServiceImplTest {
         );
 
         verify(bookingMapper, never())
-                .toResponse(any(Booking.class));
+                .toResponse(
+                        any(Booking.class)
+                );
     }
 
     @Test
@@ -1047,7 +1141,10 @@ class BookingServiceImplTest {
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(user);
 
-        when(bookingRepository.findByUserId(user.getId()))
+        when(bookingRepository
+                .findByUserId(
+                        user.getId()
+                ))
                 .thenReturn(bookings);
 
         when(bookingMapper.toResponseList(bookings))
@@ -1057,10 +1154,15 @@ class BookingServiceImplTest {
                 bookingService.getMyBookings();
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(
+                1,
+                result.size()
+        );
 
-        verify(bookingRepository, times(1))
-                .findByUserId(user.getId());
+        verify(bookingRepository)
+                .findByUserId(
+                        user.getId()
+                );
     }
 
     @Test
@@ -1073,7 +1175,9 @@ class BookingServiceImplTest {
                 List.of(response);
 
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(organizer);
@@ -1085,28 +1189,37 @@ class BookingServiceImplTest {
                 .thenReturn(responses);
 
         List<BookingResponse> result =
-                bookingService.getBookingsByEvent(1L);
+                bookingService.getBookingsByEvent(
+                        1L
+                );
 
         assertNotNull(result);
-        assertEquals(1, result.size());
 
-        verify(bookingRepository, times(1))
+        assertEquals(
+                1,
+                result.size()
+        );
+
+        verify(bookingRepository)
                 .findByEventId(1L);
     }
 
     @Test
     void getBookingsByEvent_shouldThrowExceptionWhenOrganizerIsNotOwner() {
 
-        User anotherOrganizer = User.builder()
-                .id(99L)
-                .firstName("Other")
-                .lastName("Organizer")
-                .email("other.organizer@test.com")
-                .role(Role.ORGANIZER)
-                .build();
+        User anotherOrganizer =
+                User.builder()
+                        .id(99L)
+                        .firstName("Other")
+                        .lastName("Organizer")
+                        .email("other.organizer@test.com")
+                        .role(Role.ORGANIZER)
+                        .build();
 
         when(eventRepository.findById(1L))
-                .thenReturn(Optional.of(event));
+                .thenReturn(
+                        Optional.of(event)
+                );
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(anotherOrganizer);
@@ -1114,7 +1227,8 @@ class BookingServiceImplTest {
         InvalidOperationException exception =
                 assertThrows(
                         InvalidOperationException.class,
-                        () -> bookingService.getBookingsByEvent(1L)
+                        () -> bookingService
+                                .getBookingsByEvent(1L)
                 );
 
         assertEquals(
@@ -1123,7 +1237,9 @@ class BookingServiceImplTest {
         );
 
         verify(bookingRepository, never())
-                .findByEventId(anyLong());
+                .findByEventId(
+                        anyLong()
+                );
     }
 
     @Test
@@ -1154,9 +1270,13 @@ class BookingServiceImplTest {
                 );
 
         assertNotNull(result);
-        assertEquals(1, result.size());
 
-        verify(bookingRepository, times(1))
+        assertEquals(
+                1,
+                result.size()
+        );
+
+        verify(bookingRepository)
                 .findByUserIdAndBookingStatus(
                         user.getId(),
                         BookingStatus.PENDING

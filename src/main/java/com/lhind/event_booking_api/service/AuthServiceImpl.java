@@ -1,4 +1,5 @@
 package com.lhind.event_booking_api.service;
+
 import com.lhind.event_booking_api.dto.auth.AuthResponse;
 import com.lhind.event_booking_api.dto.auth.LoginRequest;
 import com.lhind.event_booking_api.dto.auth.RegisterRequest;
@@ -22,14 +23,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthServiceImpl implements AuthService {
 
+    private static final Logger log =
+            LogManager.getLogger(AuthServiceImpl.class);
+
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
     private final JwtService jwtService;
-    private static final Logger log =
-            LogManager.getLogger(AuthServiceImpl.class);
 
     public AuthServiceImpl(
             UserRepository userRepository,
@@ -50,24 +52,46 @@ public class AuthServiceImpl implements AuthService {
     // REGISTER
     @Override
     @Transactional
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(
+            RegisterRequest request
+    ) {
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        log.info(
+                "Registration requested for email: {}",
+                request.getEmail()
+        );
+
+        if (userRepository.existsByEmail(
+                request.getEmail()
+        )) {
+
+            log.warn(
+                    "Registration rejected because email already exists: {}",
+                    request.getEmail()
+            );
+
             throw new DuplicateResourceException(
-                    "Email already exists: " + request.getEmail()
+                    "Email already exists: "
+                            + request.getEmail()
             );
         }
 
-        User user = userMapper.toEntity(request);
+        User user =
+                userMapper.toEntity(request);
 
         user.setPassword(
-                passwordEncoder.encode(request.getPassword())
+                passwordEncoder.encode(
+                        request.getPassword()
+                )
         );
 
-        // Regjistrimi publik krijon USER
-        user.setRole(Role.USER);
+        // Regjistrimi publik krijon gjithmone USER
+        user.setRole(
+                Role.USER
+        );
 
-        User savedUser = userRepository.save(user);
+        User savedUser =
+                userRepository.save(user);
 
         UserDetails userDetails =
                 userDetailsService.loadUserByUsername(
@@ -75,18 +99,36 @@ public class AuthServiceImpl implements AuthService {
                 );
 
         String token =
-                jwtService.generateToken(userDetails);
+                jwtService.generateToken(
+                        userDetails
+                );
+
+        log.info(
+                "User registered successfully with id: {}",
+                savedUser.getId()
+        );
 
         return AuthResponse.builder()
                 .token(token)
-                .user(userMapper.toResponse(savedUser))
+                .user(
+                        userMapper.toResponse(
+                                savedUser
+                        )
+                )
                 .build();
     }
 
     // LOGIN
     @Override
     @Transactional(readOnly = true)
-    public AuthResponse login(LoginRequest request) {
+    public AuthResponse login(
+            LoginRequest request
+    ) {
+
+        log.info(
+                "Login requested for email: {}",
+                request.getEmail()
+        );
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -95,14 +137,23 @@ public class AuthServiceImpl implements AuthService {
                 )
         );
 
-        User user = userRepository
-                .findByEmail(request.getEmail())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "User not found with email: "
-                                        + request.getEmail()
+        User user =
+                userRepository
+                        .findByEmail(
+                                request.getEmail()
                         )
-                );
+                        .orElseThrow(() -> {
+
+                            log.warn(
+                                    "Authenticated user not found with email: {}",
+                                    request.getEmail()
+                            );
+
+                            return new ResourceNotFoundException(
+                                    "User not found with email: "
+                                            + request.getEmail()
+                            );
+                        });
 
         UserDetails userDetails =
                 userDetailsService.loadUserByUsername(
@@ -110,11 +161,21 @@ public class AuthServiceImpl implements AuthService {
                 );
 
         String token =
-                jwtService.generateToken(userDetails);
+                jwtService.generateToken(
+                        userDetails
+                );
+
+        log.info(
+                "Login successful for user id: {}",
+                user.getId()
+        );
 
         return AuthResponse.builder()
                 .token(token)
-                .user(userMapper.toResponse(user))
+                .user(
+                        userMapper.toResponse(
+                                user)
+                )
                 .build();
     }
 }
