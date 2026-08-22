@@ -127,10 +127,10 @@ class BookingRepositoryTest {
     }
 
     @Test
-    void findByUserId_shouldReturnUserBookings() {
+    void findBookingsByUserNative_shouldReturnUserBookings() {
 
         List<Booking> result =
-                bookingRepository.findByUserId(
+                bookingRepository.findBookingsByUserNative(
                         user.getId()
                 );
 

@@ -709,7 +709,7 @@ class EventServiceImplTest {
         List<EventResponse> responses =
                 List.of(response);
 
-        when(eventRepository.findByEventStatus(
+        when(eventRepository.findEventsByStatusJPQL(
                 EventStatus.PUBLISHED
         )).thenReturn(events);
 
@@ -725,6 +725,11 @@ class EventServiceImplTest {
                 1,
                 result.size()
         );
+
+        verify(eventRepository)
+                .findEventsByStatusJPQL(
+                        EventStatus.PUBLISHED
+                );
     }
 
     @Test

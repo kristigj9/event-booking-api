@@ -1142,7 +1142,7 @@ class BookingServiceImplTest {
                 .thenReturn(user);
 
         when(bookingRepository
-                .findByUserId(
+                .findBookingsByUserNative(
                         user.getId()
                 ))
                 .thenReturn(bookings);
@@ -1154,13 +1154,14 @@ class BookingServiceImplTest {
                 bookingService.getMyBookings();
 
         assertNotNull(result);
+
         assertEquals(
                 1,
                 result.size()
         );
 
         verify(bookingRepository)
-                .findByUserId(
+                .findBookingsByUserNative(
                         user.getId()
                 );
     }

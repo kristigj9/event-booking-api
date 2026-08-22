@@ -162,7 +162,7 @@ public class EventServiceImpl implements EventService {
         );
     }
 
-    // GET EVENTS BY STATUS
+    // GET EVENTS BY STATUS - JPQL
     @Override
     @Transactional(readOnly = true)
     public List<EventResponse> getEventsByStatus(
@@ -170,12 +170,12 @@ public class EventServiceImpl implements EventService {
     ) {
 
         log.debug(
-                "Fetching events by status: {}",
+                "Fetching events by status using JPQL: {}",
                 status
         );
 
         return eventMapper.toResponseList(
-                eventRepository.findByEventStatus(
+                eventRepository.findEventsByStatusJPQL(
                         status
                 )
         );

@@ -229,6 +229,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     // GET BOOKINGS OF CURRENT USER
+    // GET BOOKINGS OF CURRENT USER - NATIVE QUERY
     @Override
     @Transactional(readOnly = true)
     public List<BookingResponse> getMyBookings() {
@@ -237,17 +238,16 @@ public class BookingServiceImpl implements BookingService {
                 authenticatedUserService.getCurrentUser();
 
         log.debug(
-                "Fetching bookings for user id: {}",
+                "Fetching bookings for user id: {} using native query",
                 currentUser.getId()
         );
 
         return bookingMapper.toResponseList(
-                bookingRepository.findByUserId(
+                bookingRepository.findBookingsByUserNative(
                         currentUser.getId()
                 )
         );
     }
-
     // GET BOOKINGS BY EVENT
     @Override
     @Transactional(readOnly = true)

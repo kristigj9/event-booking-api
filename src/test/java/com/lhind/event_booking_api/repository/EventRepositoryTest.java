@@ -162,10 +162,10 @@ class EventRepositoryTest {
     }
 
     @Test
-    void findByEventStatus_shouldReturnPublishedEvents() {
+    void findEventsByStatusJPQL_shouldReturnPublishedEvents() {
 
         List<Event> result =
-                eventRepository.findByEventStatus(
+                eventRepository.findEventsByStatusJPQL(
                         EventStatus.PUBLISHED
                 );
 
